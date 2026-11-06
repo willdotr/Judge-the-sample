@@ -13,13 +13,13 @@ my agent about it, and do not edit it afterwards; add a dated revision below ins
 
 ## 1. Population and target
 
-- Scenario and file:
-- One row means:
-- Number of rows (N):
-- Row order, and what it means in this file:
-- Target column and units:
-- My finite population is (and what it is not):
-- True mean I calculated (and how):
+- Scenario and file: Clinic waiting times, clinic_visits.csv
+- One row means: One appointment
+- Number of rows (N): 10,000
+- Row order, and what it means in this file: It is chronological. it runs week by week, Mon to Fri. Also slots 1-20 within each day. 
+- Target column and units: wait_time, whole minutes
+- My finite population is (and what it is not): The finite population is the 10,000 appointments in the file. It is not every clinic, every week, or every patient.
+- True mean I calculated (and how): The true mean is 22.6842 minutes. The sum of wait_time over all 10,000 rows (which is 226,842) divided by 10,000. 226,842 / 10,000 = 0.0226842 (or 22.6842).
 
 ## 2. Design choices
 
