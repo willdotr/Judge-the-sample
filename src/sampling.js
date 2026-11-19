@@ -236,11 +236,33 @@ export function summarizeEstimates(estimates, trueMeanValue) {
   };
 }
 
+// Modified copy for the challenge: the same appointments sorted by weekday (Mon to Fri), keeping the
+// original order within each weekday. Returns NEW row objects; the original array and its rows are
+// never changed. The explicit index tie-break makes the order stable.
+export function sortedByWeekday(rows) {
+  return rows
+    .map((r, i) => ({ r: { ...r }, i }))
+    .sort((a, b) => WEEKDAYS.indexOf(a.r.weekday) - WEEKDAYS.indexOf(b.r.weekday) || a.i - b.i)
+    .map((x) => x.r);
+}
+
+// The four challenge results at the same total n, repetition count and seed: the chosen method
+// (simple random) and the alternative (systematic), each on the baseline and on the modified copy.
+export function buildChallengeSpecs({ n, reps, seed }) {
+  return [
+    { method: "srs", population: "baseline", n, reps, seed },
+    { method: "srs", population: "modified", n, reps, seed },
+    { method: "systematic", population: "baseline", n, reps, seed },
+    { method: "systematic", population: "modified", n, reps, seed },
+  ];
+}
+
 // Text key of everything that defines a result. Results with different keys are different
 // conditions and must never be pooled or averaged together.
 export function conditionKey(spec, N) {
   const exact = spec.method === "systematic" && Number.isInteger(N / spec.n);
   return [
+    spec.population || "baseline",
     spec.method,
     spec.n,
     exact ? "exact" : `mc-seed${spec.seed}-reps${spec.reps}`,
@@ -312,6 +334,7 @@ export function repeatedSampling(rows, spec, { keepSamples = false } = {}) {
 
   return {
     method,
+    population: spec.population || "baseline",
     n,
     type,
     seed: usedSeed,

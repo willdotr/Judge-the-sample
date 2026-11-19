@@ -19,9 +19,10 @@ function settingsText(r) {
   if (r.method === "stratified") {
     return `stratified on ${r.strataColumn}; proportional allocation (largest remainder, at least 1 row per stratum); estimate = population-weighted mean`;
   }
+  const order = r.population === "modified" ? "weekday-sorted row order of the modified copy" : "file row order";
   return r.design === "whole"
-    ? `row order, whole-number interval k = ${r.count}, every possible random start`
-    : "row order, fractional interval with a random start";
+    ? `${order}, whole-number interval k = ${r.count}, every possible random start`
+    : `${order}, fractional interval with a random start`;
 }
 
 // One dot per estimate on a shared minutes axis, with the labelled true mean and the mean of the estimates.
@@ -92,7 +93,9 @@ function Bars({ r, maxVal }) {
   );
 }
 
-export default function ExperimentView({ results, trueMeanValue, populationLabel }) {
+// legendTrue (optional) replaces the single true-mean legend text when rows come from different
+// populations; each strip's black line is always the true mean of that row's own population.
+export default function ExperimentView({ results, trueMeanValue, populationLabel, legendTrue }) {
   // Shared minutes axis and shared bar scale across the conditions of one experiment.
   let lo = trueMeanValue;
   let hi = trueMeanValue;
@@ -105,7 +108,7 @@ export default function ExperimentView({ results, trueMeanValue, populationLabel
     <div className="expcard">
       <div className="explegend">
         <span><svg width="22" height="12"><line x1="11" x2="11" y1="0" y2="12" stroke="#000" strokeWidth="2" /></svg>{" "}
-          <strong>True population mean: {trueMeanValue.toFixed(4)} min</strong></span>
+          <strong>{legendTrue || `True population mean: ${trueMeanValue.toFixed(4)} min`}</strong></span>
         <span><svg width="14" height="12"><polygon points="7,1 1,11 13,11" fill="#c2255c" /></svg>{" "}
           mean of the estimates (its gap from the true mean is the bias)</span>
         <span><svg width="14" height="12"><circle cx="7" cy="6" r="4" fill="#1f4e79" fillOpacity="0.6" /></svg>{" "}
@@ -113,7 +116,7 @@ export default function ExperimentView({ results, trueMeanValue, populationLabel
       </div>
 
       {results.map((r) => (
-        <div className="exprow" key={`${r.method}-${r.n}-${r.strataColumn}`}>
+        <div className="exprow" key={`${r.population}-${r.method}-${r.n}-${r.strataColumn}`}>
           <div className="rowlabel">
             <h3>{METHOD_NAME[r.method]}, n = {r.n}</h3>
             <div><strong>{r.type === "exact" ? "Exact" : "Monte Carlo"}</strong>
@@ -124,7 +127,10 @@ export default function ExperimentView({ results, trueMeanValue, populationLabel
                 ? <>Starts: <strong>{r.count}</strong> (every possible start, each once)</>
                 : <>Repetitions: <strong>{r.count}</strong> (separate samples)</>}
             </div>
-            <div>Population: {populationLabel}</div>
+            <div className={r.population === "modified" ? "popmod" : ""}>
+              Population: {r.populationLabel || populationLabel}
+            </div>
+            <div className="small">True mean of this population: {r.trueMean.toFixed(4)} min</div>
             <div className="small">{settingsText(r)}</div>
             {r.note && <div className="small reuse">{r.note}</div>}
           </div>

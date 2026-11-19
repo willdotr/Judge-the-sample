@@ -38,3 +38,9 @@ h2 { font-size: 1.1rem; margin: 0 0 4px; }
 .axislabel { text-align: center; font-size: 0.8rem; }
 .small { font-size: 0.82rem; }
 .reuse { font-style: italic; }
+.popmod { font-weight: bold; color: #a61e1e; }
+.dim { opacity: 0.5; }
+.chtable { overflow-x: auto; max-width: 1240px; margin: 0 0 18px; }
+.chtable table { border-collapse: collapse; font-size: 0.88rem; background: #fff; color: #111; }
+.chtable th, .chtable td { border: 1px solid #bbb; padding: 4px 8px; text-align: right; }
+.chtable th:first-child, .chtable td:first-child, .chtable th:nth-child(2), .chtable td:nth-child(2) { text-align: left; }

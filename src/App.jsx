@@ -7,6 +7,7 @@ import OrderGrid from "./OrderGrid.jsx";
 import Histogram, { WeekdayLegend } from "./Histogram.jsx";
 import RuleBox from "./RuleBox.jsx";
 import ExperimentView from "./ExperimentView.jsx";
+import Challenge from "./Challenge.jsx";
 
 const N = population.length;
 const MAX_WAIT = Math.max(...population.map((r) => r.wait_time));
@@ -25,6 +26,7 @@ const TABS = [
   { id: "single", label: "Single sample" },
   { id: "A", label: "Experiment A: methods" },
   { id: "B", label: "Experiment B: sample size" },
+  { id: "challenge", label: "Challenge: reordering" },
 ];
 
 function Experiments({ tab, seed, setSeed, reps, setReps, column, setColumn }) {
@@ -272,6 +274,9 @@ export default function App() {
   const [expSeed, setExpSeed] = useState(2026);
   const [expReps, setExpReps] = useState(100);
   const [expColumn, setExpColumn] = useState("weekday");
+  // Challenge tab: total n shared by all four results (the seed and repetitions above are shared too).
+  const [chN, setChN] = useState(100);
+  const [chNText, setChNText] = useState("100");
 
   return (
     <div className="page">
@@ -292,7 +297,19 @@ export default function App() {
       <div hidden={tab !== "single"}>
         <SingleSample />
       </div>
-      {tab !== "single" && (
+      {tab === "challenge" && (
+        <Challenge
+          n={chN}
+          setN={setChN}
+          nText={chNText}
+          setNText={setChNText}
+          seed={expSeed}
+          setSeed={setExpSeed}
+          reps={expReps}
+          setReps={setExpReps}
+        />
+      )}
+      {(tab === "A" || tab === "B") && (
         <Experiments
           tab={tab}
           seed={expSeed}
