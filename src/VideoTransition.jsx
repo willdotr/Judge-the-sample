@@ -8,6 +8,9 @@ import { KEY_LOW, KEY_HIGH, BLACK_LOW, BLACK_HIGH, coverageOf, coverScale } from
 // Clips live in public/transition/. clipUrl("experiment-a.mp4") is the address of one of them.
 export const clipUrl = (name) => `${import.meta.env.BASE_URL}transition/${name}`;
 const PLAYBACK_RATE = 2; // 1 = normal speed; 1.5 = 50% faster; 2 = twice as fast. Browsers allow roughly 0.25 to 4.
+// A clip can play at its own speed instead: list it here by file name. back-to-menu-2.mp4 plays a bit slower.
+const RATE_BY_CLIP = { "back-to-menu-2.mp4": 1.6 };
+const rateFor = (src) => RATE_BY_CLIP[src.split("/").pop()] || PLAYBACK_RATE;
 const COVER_THRESHOLD = 0.97; // the screen underneath is swapped the first time the clip covers this much
 const BLACK_COVER_THRESHOLD = 0.9; // same idea for black-keyed clips, whose glass has dark cracks in it
 const MID_FALLBACK = 0.6; // ...or at this fraction of the clip if it never covers the whole screen
@@ -26,8 +29,8 @@ function getVideo(src) {
     v.muted = true;
     v.playsInline = true;
     v.preload = "auto";
-    v.defaultPlaybackRate = PLAYBACK_RATE; // loading a source resets playbackRate to this default
-    v.playbackRate = PLAYBACK_RATE;
+    v.defaultPlaybackRate = rateFor(src); // loading a source resets playbackRate to this default
+    v.playbackRate = rateFor(src);
     v.src = src;
     videos.set(src, v);
   }
@@ -141,7 +144,8 @@ export default function VideoTransition({ src, keyColor = "green", snapshot = nu
 
     // Some browsers reset the speed when the clip starts or restarts, so it is re-applied every time.
     const applyRate = () => {
-      if (video.playbackRate !== PLAYBACK_RATE) video.playbackRate = PLAYBACK_RATE;
+      const rate = rateFor(src);
+      if (video.playbackRate !== rate) video.playbackRate = rate;
     };
 
     try {

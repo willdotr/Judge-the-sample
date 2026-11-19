@@ -80,5 +80,5 @@ After I test it:
 ## 6. AI use
 
 - Tools used: Claude
-- What I asked my agent to do, and what I checked myself: I asked the agent to brainstorm visualization designs and build the entire app. I checked the app against the list and calculated the true-mean entry myself. I also ran the experiments myself. 
+- What I asked my agent to do, and what I checked myself: I asked the agent to brainstorm visualization designs and build the entire app. Including all of the transitions, the music player, and the footer animation. I checked the app against the list and calculated the true-mean entry myself. I also ran the experiments myself. 
 - Automated checks my agent reported (I did not let it interpret my results): It reported that 128 automated checks passed. This covers the three samplers, allocation, exact enumeration of starts, reproducibility, hand-calculated bias, and SD and RMSE.

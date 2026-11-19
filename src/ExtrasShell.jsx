@@ -21,15 +21,15 @@ const LABELS = {
 
 // Green-screen clips in public/transition/.
 //  - DEFAULT_CLIP is the normal subway transition. It plays when you leave the main menu to enter the app.
-//  - BACK_CLIP plays only when you go BACK to the main menu. If it is missing or can't play, the default clip
-//    is used for that trip instead.
+//  - BACK_CLIPS play only when you go BACK to the main menu. Each time, one of them is picked at random. If the
+//    picked one is missing or can't play, the other is tried, and then the default clip.
 //  - CLIPS are the section transitions. They play only when you move between sections INSIDE the app
 //    (the tabs), and only for sections that have a clip. A section without a clip switches instantly.
 // To give another section its own clip, put the file in public/transition/ and add a line here, for example:
 //   B: "experiment-b.mp4", challenge: "challenge.mp4", single: "single-sample.mp4"
 const DEFAULT_CLIP = "transition.mp4";
-const BACK_CLIP = "back-to-menu.mp4";
-// The back clip starts fading out this many milliseconds before it ends (it dims while still playing).
+const BACK_CLIPS = ["back-to-menu.mp4", "back-to-menu-2.mp4"];
+// Each back clip starts fading out this many milliseconds before it ends (it dims while still playing).
 // Raise it for a longer, gentler fade; set it to 0 for no early fade.
 const BACK_FADE_MS = 450;
 const CLIPS = { single: "single-sample.mp4", A: "experiment-a.mp4", B: "experiment-b.mp4", challenge: "challenge.mp4" };
@@ -56,11 +56,20 @@ export default function ExtrasShell() {
 
   // Once inside the app, load every section clip ahead of time so moving between sections doesn't wait.
   useEffect(() => {
-    if (screen === "app") [...Object.values(CLIPS), BACK_CLIP].forEach((name) => preloadTransitionVideo(clipUrl(name)));
+    if (screen === "app") [...Object.values(CLIPS), ...BACK_CLIPS].forEach((name) => preloadTransitionVideo(clipUrl(name)));
   }, [screen]);
 
   // Main menu <-> app. Ignores clicks while a transition is already running.
-  const go = (target) => setTrans((cur) => cur || { target, kind: target === "menu" ? "back" : "enter" });
+  // For a trip back to the menu, one of the back clips is picked at random here, once, so it stays the same for the
+  // whole transition.
+  const go = (target) =>
+    setTrans(
+      (cur) =>
+        cur ||
+        (target === "menu"
+          ? { target, kind: "back", pick: Math.floor(Math.random() * BACK_CLIPS.length) }
+          : { target, kind: "enter" })
+    );
 
   // Moving between sections inside the app (the tab buttons).
   const currentTab = openTab ? openTab.tab : "single";
@@ -98,14 +107,15 @@ export default function ExtrasShell() {
     }
   }
 
-  // Which clip plays: the section's own clip for a tab change; the back clip (then the default clip) for a trip
-  // back to the menu; the default clip for entering the app from the menu. The first one that works is used.
+  // Which clip plays: the section's own clip for a tab change; the randomly picked back clip (then the other back
+  // clip, then the default clip) for a trip back to the menu; the default clip for entering the app from the menu.
+  // The first one that works is used.
   const wantedClips = !trans
     ? []
     : trans.kind === "tab"
       ? [CLIPS[trans.target]]
       : trans.kind === "back"
-        ? [BACK_CLIP, DEFAULT_CLIP]
+        ? [BACK_CLIPS[trans.pick || 0], ...BACK_CLIPS.filter((_, i) => i !== (trans.pick || 0)), DEFAULT_CLIP]
         : [DEFAULT_CLIP];
   const clip = wantedClips.filter(Boolean).map(clipUrl).find((u) => !failedClips.includes(u)) || null;
   const markFailed = (u) => setFailedClips((list) => (list.includes(u) ? list : [...list, u]));
@@ -136,7 +146,7 @@ export default function ExtrasShell() {
           src={clip}
           keyColor={trans.kind === "tab" ? KEY_COLOR[trans.target] || "green" : "green"}
           snapshot={trans.snapshot || null}
-          fadeBeforeEndMs={trans.kind === "back" && clip === clipUrl(BACK_CLIP) ? BACK_FADE_MS : 0}
+          fadeBeforeEndMs={trans.kind === "back" && BACK_CLIPS.some((name) => clip === clipUrl(name)) ? BACK_FADE_MS : 0}
           label={LABELS[trans.target]}
           onMidpoint={swapScreen}
           onDone={() => setTrans(null)}

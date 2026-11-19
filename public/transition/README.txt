@@ -4,8 +4,10 @@ each clip muted (your music player keeps playing).
 When each clip plays:
 
     transition.mp4     The normal subway transition. Plays when you pick something on the main menu. It also
-                       plays when you go back to the main menu if back-to-menu.mp4 is missing.
+                       plays when you go back to the main menu if both back clips are missing.
     back-to-menu.mp4   Plays only when you go BACK to the main menu (the "Main menu" button inside the app).
+    back-to-menu-2.mp4 A second back clip. Each trip back to the menu picks one of the two at random. Both get the
+                       same fade-out near their end.
     experiment-a.mp4   Plays when you move to Experiment A from another section INSIDE the app (the tab buttons).
     experiment-b.mp4   Plays when you move to Experiment B from another section INSIDE the app.
     single-sample.mp4  Plays when you move to Single sample from another section INSIDE the app.
