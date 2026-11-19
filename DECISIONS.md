@@ -16,7 +16,7 @@ my agent about it, and do not edit it afterwards; add a dated revision below ins
 - Scenario and file: Clinic waiting times, clinic_visits.csv
 - One row means: One appointment
 - Number of rows (N): 10,000
-- Row order, and what it means in this file: It is chronological. it runs week by week, Mon to Fri. Also slots 1-20 within each day. 
+- Row order, and what it means in this file: It is chronological. It runs week by week, Mon to Fri, and slots 1-20 within each day.
 - Target column and units: wait_time, whole minutes
 - My finite population is (and what it is not): The finite population is the 10,000 appointments in the file. It is not every clinic, every week, or every patient.
 - True mean I calculated (and how): The true mean is 22.6842 minutes. The sum of wait_time over all 10,000 rows (which is 226,842) divided by 10,000. 226,842 / 10,000 = 22.6842.
@@ -41,7 +41,7 @@ value for modified rows). Keep each result in its own row: never pool estimates.
 
 | Experiment | Population or condition | Method | Settings | Seed (or exact) | n | Repetitions or starts | Type | True mean | Bias | SD | RMSE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Methods at n = 100 | baseline | Simple random |none |2026| 100 |100 |Monte Carlo |22.68 |-0.13 |1.49  |1.49
+| Methods at n = 100 | baseline | Simple random | none | 2026 | 100 | 100 | Monte Carlo | 22.68 | -0.13 | 1.49 | 1.49 |
 | Methods at n = 100 | baseline | Systematic | row order | exact | 100 | 100 | exact | 22.68 | 0.00 | 6.96 | 6.96 |
 | Methods at n = 100 | baseline | Stratified | weekday | 2026 | 100 | 100 | Monte Carlo | 22.68 | 0.18 | 1.56 | 1.57 |
 | Sample size | baseline | Simple random | none | 2026 | 1 | 100 | Monte Carlo | 22.68 | 0.84 | 14.63 | 14.65 |
@@ -57,8 +57,8 @@ rows use the same n; a challenge baseline row may repeat a matching stage 4 resu
 
 ## 4. Findings (in my own words, using my own numbers)
 
-- (a) Method comparison: the three sampling methods compared at n = 100 (bias versus variability, and for which population): **On the baseline population at n = 100, simple random and stratified on weekday had small biases and similar spread. On the other hand, systematic had bias 0.00 but a much larger SD and RMSE of 6.96. The methods differed mainly in variability and the biases of the two Monte Carlo methods are small next to their SD's so they could be noise.**
-- (b) Sample-size finding: how sample size affects the spread of estimates and the estimation error, and what a larger sample cannot fix: **For simple random sampling, the SD of the estimates fell from 14.63 at n = 1 to 4.77 at n = 10 and 1.49 at n = 100, with RMSE falling in step. Yet, the bias stayed small and changed sign (+0.84, +0.18, −0.13).**
+- (a) Method comparison: the three sampling methods compared at n = 100 (bias versus variability, and for which population): **On the baseline population at n = 100, simple random and stratified on weekday had small biases and similar spread. On the other hand, systematic had bias 0.00 but a much larger SD and RMSE of 6.96. The methods differed mainly in variability and the biases of the two Monte Carlo methods are small next to their SDs so they could be noise.**
+- (b) Sample-size finding: how sample size affects the spread of estimates and the estimation error, and what a larger sample cannot fix: **For simple random sampling, the SD of the estimates fell from 14.63 at n = 1 to 4.77 at n = 10 and 1.49 at n = 100, with RMSE falling in step. Yet, the bias stayed small and changed sign (+0.84, +0.18, −0.13). A larger sample reduced random variation, but it did not make every method equally good. My simple random results show no clear consistent error.**
 
 ## 5. Challenge (hypothesis written independently, before consulting my agent)
 
@@ -74,11 +74,11 @@ Hypothesis, written before I consult my agent:
 
 After I test it:
 
-- Test settings (conditions, methods, alternative method or correction, n, seeds); results are in the table above: **Baseline (sorted by weekday) and modified. Simple random as the challenged method and systematic as the alternative (exact, all 100 starts, no seed); n = 100 for all four results.**
-- (c) Challenge interpretation: did the evidence support my hypothesis? Bias versus variability, other explanations, what the alternative or correction showed, and any dated revision (keep the original above): **The first part was supported: simple random's bias was −0.13 on the baseline and −0.15 on the sorted copy, its SD was 1.49 and 1.46, and its RMSE was 1.49 and 1.47. These differences of a few hundredths are small next to the SD, so they look like simulation noise, and the error is mostly variability. The second part was not supported at n = 100.
+- Test settings (conditions, methods, alternative method or correction, n, seeds); results are in the table above: **Baseline (original file order) and modified (sorted by weekday). Simple random as the challenged method and systematic as the alternative (exact, all 100 starts, no seed); n = 100 for all four results.**
+- (c) Challenge interpretation: did the evidence support my hypothesis? Bias versus variability, other explanations, what the alternative or correction showed, and any dated revision (keep the original above): **The first part was supported: simple random's bias was −0.13 on the baseline and −0.15 on the sorted copy, its SD was 1.49 and 1.46, and its RMSE was 1.49 and 1.47. These differences of a few hundredths are small next to the SD, so they look like simulation noise, and the error is mostly variability. The second part was not supported at n = 100. For systematic sampling, bias was 0.00 in both cases and the SD was 6.96 on the baseline and 6.94 on the sorted copy, so sorting by weekday barely changed it. The evidence supported my expectation for simple random and did not support it for systematic.**
 
 ## 6. AI use
 
 - Tools used: Claude
-- What I asked my agent to do, and what I checked myself: I asked the agent to brainstorm visualization desgins and build the entire app. I checked the app against the list and calculated the true-mean entry myself. I also ran the experiments myself. 
-- Automated checks my agent reported (I did not let it interpret my results): It reported that 128 automated checks passed. This covers the three samplers, allocation, exact enumeration of starts, reproducibility hand-calculated bias, and SD and RMSE.
+- What I asked my agent to do, and what I checked myself: I asked the agent to brainstorm visualization designs and build the entire app. I checked the app against the list and calculated the true-mean entry myself. I also ran the experiments myself. 
+- Automated checks my agent reported (I did not let it interpret my results): It reported that 128 automated checks passed. This covers the three samplers, allocation, exact enumeration of starts, reproducibility, hand-calculated bias, and SD and RMSE.

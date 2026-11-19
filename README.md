@@ -5,9 +5,9 @@ App link (optional):
 
 **Central question:** Which sampling method would you trust for this population, at what sample size, and with what limits?
 
-- **Scenario:** <!-- clinic waiting times / healthcare costs / wearable heart rate -->
-- **Data file:** `data/<!-- file name -->` (source, licence and provenance in `data/README.md`)
-- **Seed(s) used for my evidence** (exact enumeration needs no seed):
+- **Scenario:** clinic waiting times
+- **Data file:** `data/clinic_visits.csv` (source, licence and provenance in `data/README.md`)
+- **Seed(s) used for my evidence** (exact enumeration needs no seed): 2026
 
 ## Run it on your computer
 
