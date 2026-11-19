@@ -19,13 +19,13 @@ my agent about it, and do not edit it afterwards; add a dated revision below ins
 - Row order, and what it means in this file: It is chronological. it runs week by week, Mon to Fri. Also slots 1-20 within each day. 
 - Target column and units: wait_time, whole minutes
 - My finite population is (and what it is not): The finite population is the 10,000 appointments in the file. It is not every clinic, every week, or every patient.
-- True mean I calculated (and how): The true mean is 22.6842 minutes. The sum of wait_time over all 10,000 rows (which is 226,842) divided by 10,000. 226,842 / 10,000 = 0.0226842 (or 22.6842).
+- True mean I calculated (and how): The true mean is 22.6842 minutes. The sum of wait_time over all 10,000 rows (which is 226,842) divided by 10,000. 226,842 / 10,000 = 22.6842.
 
 ## 2. Design choices
 
 For each stage: the option I chose, why, and what it is meant to help a user learn.
 
-- Stage 2, visualization (include one visual feature meant to reveal a sampling problem):
+- Stage 2, visualization (include one visual feature meant to reveal a sampling problem): I chose to have a grid of all 10k appointments in file order as the main view. Having a histogram of waits and weekday sample dots as the secondary view.  I want whoever sees it to understand where in the clinic's week the sampled appointments are at. Having the weekday be colored is a feature I thought of to reveal a sampling problem, since it shows whether the sample comes from all five days or only some. It's meant to help someone see where the sample sits and how its mean compares with the true mean of 22.6842 minutes.
 - Stage 3, sampling interactions and stratification column:
 - Stage 4, presentation of the method comparison and sample-size experiments:
 - Stage 5, challenge controls and my alternative method or correction:
@@ -79,6 +79,6 @@ After I test it:
 
 ## 6. AI use
 
-- Tools used:
-- What I asked my agent to do, and what I checked myself:
-- Automated checks my agent reported (I did not let it interpret my results):
+- Tools used: Claude
+- What I asked my agent to do, and what I checked myself: I asked the agent to brainstorm visualization desgins and build the app. I checked the app against the list and calculated the true-mean entry myself. 
+- Automated checks my agent reported (I did not let it interpret my results): It reported 14 automated checks. 
