@@ -41,56 +41,92 @@ body.p5 ::selection { background: #000; color: #fff; }
 body.p5 .page { padding-bottom: 48px; }
 
 /* Title: a black plate with a white offset and a star, skewed like the menu banners. */
+/* The slanted shape is a separate plate (::before) behind the text, so the text itself is never
+   transformed and stays sharp. The same pattern is used for the other slanted labels below. */
 body.p5 h1 {
   display: inline-block;
   position: relative;
-  font: italic 900 2.1rem/1.1 Impact, "Arial Black", sans-serif;
+  isolation: isolate;
+  font: 900 2.1rem/1.1 Impact, "Arial Black", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #fff;
-  background: #000;
-  padding: 10px 56px 10px 20px;
+  padding: 10px 56px 10px 30px;
   margin: 6px 0 20px 8px;
-  transform: skew(-9deg) rotate(-1.2deg);
-  box-shadow: 8px 8px 0 #fff;
-  border-left: 14px solid #fff;
 }
-body.p5 h1::after {
-  content: "\2605";
+body.p5 h1::before {
+  content: "";
   position: absolute;
-  right: 12px;
+  inset: 0;
+  z-index: -1;
+  background: #000;
+  border-left: 14px solid #fff;
+  box-shadow: 8px 8px 0 #fff;
+  transform: skew(-9deg);
+}
+/* Stars are real shapes (not text), so they stay crisp and can turn in place. */
+body.p5 h1::after {
+  content: "";
+  position: absolute;
+  right: 16px;
   top: 50%;
-  transform: translateY(-50%) skew(9deg);
-  color: var(--p5-red);
-  font-size: 1.9rem;
-  text-shadow: 2px 2px 0 #fff;
+  width: 1.9rem;
+  height: 1.9rem;
+  margin-top: -0.95rem;
+  background: var(--p5-red);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }
 
 /* Section headings: black plates with a red star. */
 body.p5 h2 {
   display: inline-block;
-  font: italic 900 1.1rem/1.2 Impact, "Arial Black", sans-serif;
+  position: relative;
+  isolation: isolate;
+  font: 900 1.1rem/1.2 Impact, "Arial Black", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #fff;
-  background: #000;
-  padding: 4px 16px 4px 12px;
+  padding: 4px 18px 4px 16px;
   margin: 0 0 10px;
-  transform: skew(-9deg);
-  box-shadow: 4px 4px 0 var(--p5-red);
 }
-body.p5 h2::before { content: "\2605 "; color: var(--p5-red); }
+body.p5 h2::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #000;
+  box-shadow: 4px 4px 0 var(--p5-red);
+  transform: skew(-9deg);
+}
+body.p5 h2::before {
+  content: "";
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  margin-right: 0.5em;
+  vertical-align: -0.1em;
+  background: var(--p5-red);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
 
 /* Intro: a white strip with black text, slightly angled. */
 body.p5 .intro {
   display: inline-block;
+  position: relative;
+  isolation: isolate;
   color: #000;
-  background: #fff;
   font-weight: bold;
-  padding: 6px 16px;
+  padding: 6px 18px;
   max-width: 880px;
-  transform: skew(-4deg);
+}
+body.p5 .intro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #fff;
   box-shadow: 5px 5px 0 #000;
+  transform: skew(-4deg);
 }
 body.p5 code { background: #000; color: #fff; padding: 0 5px; }
 
@@ -121,28 +157,35 @@ body.p5 .views section::after {
 body.p5 .views section { padding-bottom: 24px; }
 body.p5 .views { gap: 44px; padding-right: 12px; }
 body.p5 .controls, body.p5 .summary, body.p5 .rulebox { margin-bottom: 28px; }
-body.p5 .rulebox h2, body.p5 .views section h2 { background: var(--p5-red); box-shadow: 4px 4px 0 #000; }
-body.p5 .rulebox h2::before, body.p5 .views section h2::before { color: #fff; }
+body.p5 .rulebox h2::after, body.p5 .views section h2::after { background: var(--p5-red); box-shadow: 4px 4px 0 #000; }
+body.p5 .rulebox h2::before, body.p5 .views section h2::before { background: #fff; }
 
 /* Method chips look like menu options: black when off, red with a white edge when selected. */
 body.p5 .chip {
   position: relative;
-  border: 3px solid #000;
-  background: #000;
+  isolation: isolate;
   color: #fff;
-  font: italic 900 1rem/1 Impact, "Arial Black", sans-serif;
+  font: 900 1rem/1 Impact, "Arial Black", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  padding: 10px 22px;
+}
+body.p5 .chip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #000;
+  border: 3px solid #000;
   transform: skew(-9deg);
-  padding: 7px 20px;
 }
 body.p5 .chip input { position: absolute; opacity: 0; pointer-events: none; }
 body.p5 .chip:focus-within { outline: 3px solid var(--p5-red); outline-offset: 2px; }
-body.p5 .chip.on {
+body.p5 .chip.on { transform: translateX(4px); }
+body.p5 .chip.on::after {
   background: var(--p5-red);
   border-color: #000;
   box-shadow: 5px 5px 0 #000, inset 0 0 0 2px #fff;
-  transform: skew(-9deg) translateX(4px);
 }
 body.p5 .chip.on::before { content: "\25B6 "; font-size: 0.8em; }
 
@@ -159,7 +202,7 @@ body.p5 .controls select:focus { outline: 3px solid var(--p5-red); outline-offse
 body.p5 .hint { color: #444; }
 
 /* Key numbers. */
-body.p5 .num { font: italic 900 1.15rem Impact, "Arial Black", sans-serif; letter-spacing: 0.03em; }
+body.p5 .num { font: 900 1.15rem Impact, "Arial Black", sans-serif; letter-spacing: 0.03em; }
 body.p5 .num.sample { color: var(--p5-red); }
 
 /* Single-sample banner: black with red diagonal stripes at the edge. */
@@ -204,7 +247,7 @@ body.p5 .expcard::after {
   border-color: transparent transparent var(--p5-red) transparent;
 }
 body.p5 .exprow { border-top-color: #000; }
-body.p5 .rowlabel h3 { text-transform: uppercase; font: italic 900 1rem Impact, "Arial Black", sans-serif; color: var(--p5-red); }
+body.p5 .rowlabel h3 { text-transform: uppercase; font: 900 1rem Impact, "Arial Black", sans-serif; color: var(--p5-red); }
 body.p5 .page > .note { color: #fff; background: #000; display: inline-block; padding: 4px 10px; }
 
 /* Challenge tab. */

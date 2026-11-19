@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { population } from "./data.js";
 import { trueMean, drawSample, STRATA_COLUMNS, conditionKey } from "./sampling.js";
 import { runCondition } from "./experiments.js";
@@ -268,8 +268,11 @@ function SingleSample() {
   );
 }
 
-export default function App() {
+// openTab and onMenu are EXTRAS: the main-menu shell (src/ExtrasShell.jsx) uses them to open a tab and to
+// offer a way back. Without the shell the app works the same with no props.
+export default function App({ openTab, onMenu } = {}) {
   const [tab, setTab] = useState("single");
+  useEffect(() => { if (openTab) setTab(openTab.tab); }, [openTab]); // EXTRAS
   // Experiment settings are shared by tabs A and B, so a result is only reused when they truly match.
   const [expSeed, setExpSeed] = useState(2026);
   const [expReps, setExpReps] = useState(100);
@@ -280,6 +283,7 @@ export default function App() {
 
   return (
     <div className="page">
+      {onMenu && <button className="backmenu" onClick={onMenu}>◀ Main menu</button>} {/* EXTRAS */}
       <h1>Judge the Sample: clinic waiting times</h1>
       <p className="intro">
         Population: all {N.toLocaleString()} appointments in <code>clinic_visits.csv</code> (100 weeks × 5

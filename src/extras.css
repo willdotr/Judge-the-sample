@@ -1,0 +1,320 @@
+/* EXTRAS: separate main-menu page, Persona 5 loading transition, music player, animated background
+   and spinning stars (decoration and navigation only).
+
+   QUICK OFF SWITCH: in src/main.jsx set USE_EXTRAS to false. The plain tabbed app then loads (the
+   background animation and spinning stars, which live in this file, still run).
+
+   TO REMOVE ALL OF IT:
+     1. Delete these files: src/extras.css, src/ExtrasShell.jsx, src/MainMenu.jsx,
+        src/MusicPlayer.jsx, src/Transition.jsx, src/VideoTransition.jsx, src/chromaKey.js,
+        checks/check_chromakey.mjs
+     2. In src/main.jsx delete the lines marked EXTRAS (the ExtrasShell import, the extras.css import and
+        USE_EXTRAS) and render <App /> directly.
+     3. In src/App.jsx delete the lines marked EXTRAS (the openTab/onMenu props note, the useEffect and
+        the back button) and the useEffect import if nothing else uses it.
+     4. Optionally delete public/music/ and public/transition/ (your mp3 and mp4 stay on disk until you do).
+   Nothing else depends on these files. The sampling code is untouched. */
+
+/* ---------- Animated background (builds on the theme's two background layers) ---------- */
+body.p5::before {
+  animation: p5-shards 5s ease-in-out infinite alternate;
+  transform-origin: 20% 80%;
+}
+body.p5::after {
+  animation: p5-halftone 1.6s linear infinite;
+}
+/* Stars turn in place. */
+body.p5 h1::after,
+body.p5 h2::before,
+.p5player-star {
+  animation: p5-spin 4s linear infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes p5-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes p5-shards {
+  from { transform: scale(1) rotate(0deg); }
+  to { transform: scale(1.12) rotate(-1.6deg); }
+}
+@keyframes p5-halftone {
+  from { background-position: 0 0; }
+  to { background-position: 22px 22px; }
+}
+
+/* ---------- Music player (fixed, top right) ---------- */
+.p5player {
+  position: fixed;
+  top: 12px;
+  right: 14px;
+  z-index: 50;
+  width: 250px;
+  color: #fff;
+  padding: 11px 16px 12px;
+  isolation: isolate;
+  font-family: "Arial Narrow", "Segoe UI", system-ui, sans-serif;
+}
+/* The slanted plate is separate from the text, so the text stays sharp. */
+.p5player::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #000;
+  border: 3px solid #fff;
+  box-shadow: 6px 6px 0 #e60012;
+  transform: skew(-4deg);
+}
+.p5player-top { display: flex; align-items: center; gap: 8px; }
+/* The star glyph in the markup is hidden (font-size 0) and drawn as a shape instead. */
+.p5player-star {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  font-size: 0;
+  background: #e60012;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.p5player-title {
+  font: 900 0.95rem Impact, "Arial Black", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex: 1;
+}
+.p5player-track { font-size: 0.85rem; margin: 4px 0 6px; color: #ddd; }
+.p5player-missing { font-size: 0.8rem; margin: 4px 0 6px; color: #ff8a93; }
+.p5player-missing code { background: #222; color: #fff; padding: 0 3px; }
+.p5player-controls { display: flex; align-items: center; gap: 10px; }
+.p5player button {
+  font: 900 0.85rem Impact, "Arial Black", sans-serif;
+  text-transform: uppercase;
+  background: #e60012;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.p5player button:disabled { background: #555; cursor: not-allowed; }
+.p5player button:focus-visible, .p5player input:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.p5player input[type="range"] { width: 100px; accent-color: #e60012; }
+.p5player .sr { position: absolute; left: -9999px; }
+
+/* Equalizer bars: only move while playing. */
+.p5eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; }
+.p5eq i { display: block; width: 4px; height: 4px; background: #e60012; }
+.p5eq.on i { animation: p5-eq 0.8s ease-in-out infinite alternate; }
+.p5eq.on i:nth-child(2) { animation-delay: 0.2s; }
+.p5eq.on i:nth-child(3) { animation-delay: 0.4s; }
+.p5eq.on i:nth-child(4) { animation-delay: 0.1s; }
+@keyframes p5-eq { from { height: 3px; } to { height: 16px; } }
+
+/* Keep the title clear of the player. */
+body.p5 .page { padding-top: 24px; }
+@media (max-width: 1000px) {
+  .p5player { position: relative; top: auto; right: auto; margin: 8px 14px 14px; }
+}
+
+/* ---------- Main menu ---------- */
+.mainmenu { max-width: 1100px; }
+.menuq {
+  display: inline-block;
+  position: relative;
+  isolation: isolate;
+  font-weight: bold;
+  color: #000;
+  padding: 8px 18px;
+  margin: 0 0 20px;
+}
+.menuq::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #fff;
+  box-shadow: 5px 5px 0 #000;
+  transform: skew(-4deg);
+}
+.menugrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 30px; }
+.menucard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  background: #fff;
+  color: #111;
+  border: 4px solid #000;
+  box-shadow: 10px 10px 0 #000;
+  padding: 16px 16px 14px 58px;
+  cursor: pointer;
+  font: inherit;
+  transition: transform 0.12s ease;
+}
+.menucard:hover, .menucard:focus-visible { transform: translate(-3px, -3px); outline: 4px solid #e60012; }
+.menunum {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 38px;
+  height: 38px;
+  text-align: center;
+  color: #fff;
+  font: 900 1.4rem/38px Impact, "Arial Black", sans-serif;
+  isolation: isolate;
+}
+.menunum::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #e60012;
+  box-shadow: 3px 3px 0 #000;
+  transform: skew(-9deg);
+}
+.menutitle { font: 900 1.15rem Impact, "Arial Black", sans-serif; text-transform: uppercase; letter-spacing: 0.04em; color: #e60012; }
+.menutext { font-size: 0.92rem; line-height: 1.35; }
+.menugo { align-self: flex-end; font: 900 0.9rem Impact, "Arial Black", sans-serif; text-transform: uppercase; background: #000; color: #fff; padding: 2px 12px; }
+.menuabout { background: #fff; color: #111; border: 4px solid #000; box-shadow: 10px 10px 0 #000; padding: 14px 20px; }
+.menuabout ul { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.menuabout code { background: #000; color: #fff; padding: 0 5px; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.p5::before, body.p5::after, .p5eq.on i,
+  body.p5 h1::after, body.p5 h2::before, .p5player-star { animation: none; }
+  .menucard { transition: none; }
+}
+
+/* ---------- Main menu page extras ---------- */
+.menusub {
+  display: block;
+  width: fit-content;
+  margin: 0 0 18px 8px;
+  padding: 2px 14px;
+  background: #fff;
+  color: #000;
+  font: 900 1.05rem Impact, "Arial Black", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- Back-to-menu button inside the app ---------- */
+.backmenu {
+  margin: 0 0 12px 8px;
+  padding: 4px 14px;
+  background: #000;
+  color: #fff;
+  border: 3px solid #fff;
+  box-shadow: 4px 4px 0 #e60012;
+  font: 900 0.95rem Impact, "Arial Black", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.backmenu:hover, .backmenu:focus-visible { background: #e60012; outline: 3px solid #fff; outline-offset: 2px; }
+
+/* ---------- Persona 5-style loading transition ---------- */
+/* Three skewed layers sweep in (black leads, a white sliver, then red), a spinning star and "Now loading"
+   hold the screen, then the layers sweep out. Only transforms and opacity animate, so it stays smooth. */
+.p5t { position: fixed; inset: 0; z-index: 100; overflow: hidden; cursor: progress; }
+.p5t-layer {
+  position: absolute;
+  top: -10%;
+  left: -35%;
+  width: 170%;
+  height: 120%;
+  transform: translateX(-140%) skewX(-18deg);
+  animation: p5t-sweep 2300ms linear forwards;
+}
+.p5t-black { background: #000; animation-delay: 0ms; }
+.p5t-white { background: #fff; animation-delay: 80ms; }
+.p5t-red { background: #e60012; animation-delay: 160ms; }
+@keyframes p5t-sweep {
+  0% { transform: translateX(-140%) skewX(-18deg); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  26% { transform: translateX(0) skewX(-18deg); }
+  74% { transform: translateX(0) skewX(-18deg); animation-timing-function: cubic-bezier(0.8, 0, 0.8, 0.2); }
+  100% { transform: translateX(140%) skewX(-18deg); }
+}
+
+/* Two thin slashes cut across the red while it holds. */
+.p5t-slash { position: absolute; left: -20%; width: 140%; opacity: 0.95; }
+.p5t-slash-a {
+  top: 26%;
+  height: 26px;
+  background: #000;
+  transform: translateX(-120%) rotate(-9deg);
+  animation: p5t-slash-right 900ms ease-in-out 700ms forwards;
+}
+.p5t-slash-b {
+  top: 70%;
+  height: 12px;
+  background: #fff;
+  transform: translateX(120%) rotate(-9deg);
+  animation: p5t-slash-left 900ms ease-in-out 850ms forwards;
+}
+@keyframes p5t-slash-right { from { transform: translateX(-120%) rotate(-9deg); } to { transform: translateX(120%) rotate(-9deg); } }
+@keyframes p5t-slash-left { from { transform: translateX(120%) rotate(-9deg); } to { transform: translateX(-120%) rotate(-9deg); } }
+
+.p5t-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  opacity: 0;
+  animation: p5t-content 2300ms linear 160ms forwards;
+}
+@keyframes p5t-content {
+  0%, 24% { opacity: 0; }
+  32%, 68% { opacity: 1; }
+  76%, 100% { opacity: 0; }
+}
+
+/* Spinning star: a white star over a black offset copy, both real shapes. */
+.p5t-starwrap { position: relative; width: 110px; height: 110px; flex: none; animation: p5-spin 1.3s linear infinite; }
+.p5t-star {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.p5t-star.back { background: #000; transform: translate(8px, 8px); }
+.p5t-star.front { background: #fff; }
+
+.p5t-loading {
+  font: 900 clamp(2.4rem, 7vw, 5.5rem)/1 Impact, "Arial Black", sans-serif;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: 5px 5px 0 #000;
+}
+.p5t-dots i { font-style: normal; animation: p5t-blink 1s steps(1, end) infinite; }
+.p5t-dots i:nth-child(2) { animation-delay: 0.25s; }
+.p5t-dots i:nth-child(3) { animation-delay: 0.5s; }
+@keyframes p5t-blink { 0% { opacity: 0.1; } 40% { opacity: 1; } }
+.p5t-label {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 18px;
+  background: #000;
+  color: #fff;
+  font: 900 1.3rem Impact, "Arial Black", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+@media (max-width: 700px) {
+  .p5t-content { flex-direction: column; gap: 14px; }
+  .p5t-starwrap { width: 80px; height: 80px; }
+}
+
+/* Reduced motion: a quick fade instead of the sweep. */
+.p5t.reduced .p5t-layer { transform: none; animation: p5t-fade 600ms linear forwards; }
+.p5t.reduced .p5t-black, .p5t.reduced .p5t-white { display: none; }
+.p5t.reduced .p5t-slash { display: none; }
+.p5t.reduced .p5t-content { animation: p5t-fade 600ms linear forwards; }
+.p5t.reduced .p5t-starwrap, .p5t.reduced .p5t-dots i { animation: none; }
+@keyframes p5t-fade { 0% { opacity: 0; } 35%, 65% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---------- Green-screen video transition (keyed live in a canvas) ---------- */
+.p5vt { position: fixed; inset: 0; z-index: 100; cursor: progress; }
+.p5vt canvas { display: block; width: 100%; height: 100%; object-fit: cover; }
