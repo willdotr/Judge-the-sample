@@ -7,12 +7,15 @@
    TO REMOVE ALL OF IT:
      1. Delete these files: src/extras.css, src/ExtrasShell.jsx, src/MainMenu.jsx,
         src/MusicPlayer.jsx, src/Transition.jsx, src/VideoTransition.jsx, src/chromaKey.js,
-        src/pageSnapshot.js, checks/check_chromakey.mjs, and run: npm uninstall html-to-image
+        src/pageSnapshot.js, src/FooterAnimation.jsx, src/silhouetteKey.js, src/audioTrim.js,
+        checks/check_chromakey.mjs, checks/check_silhouette.mjs, checks/check_audiotrim.mjs, and run:
+        npm uninstall html-to-image
      2. In src/main.jsx delete the lines marked EXTRAS (the ExtrasShell import, the extras.css import and
         USE_EXTRAS) and render <App /> directly.
      3. In src/App.jsx delete the lines marked EXTRAS (the props note, the useEffect, the back button, the
         onPrepare/onNavigate handlers on the tab buttons) and the useEffect import if nothing else uses it.
-     4. Optionally delete public/music/ and public/transition/ (your mp3 and mp4 stay on disk until you do).
+     4. Optionally delete public/music/, public/transition/, public/footer/ and public/popup/ (your files stay on
+        disk until you do).
    Nothing else depends on these files. The sampling code is untouched. */
 
 /* ---------- Animated background (builds on the theme's two background layers) ---------- */
@@ -322,3 +325,49 @@ body.p5 .page { padding-top: 24px; }
 /* Link inside the "About the data" box on the main menu. */
 .menuabout a { color: #e60012; font-weight: bold; text-decoration: underline; }
 .menuabout a:hover, .menuabout a:focus-visible { background: #000; color: #fff; outline: 2px solid #000; }
+
+/* ---------- Footer animation (every screen except the main menu) ---------- */
+/* The app fills at least the window, so the animation sits at the very bottom, drawn straight on the page. */
+.appframe { display: flex; flex-direction: column; min-height: 100vh; }
+.appframe > .page { flex: 1 0 auto; }
+
+.footband { flex: none; display: flex; justify-content: flex-end; padding: 0 44px 8px; }
+/* --fa-w is how wide the character is shown: raise it for a bigger animation. */
+.footanim { --fa-w: 190px; position: relative; display: block; width: var(--fa-w); padding: 0; border: 0; background: none; font: inherit; }
+.footanim:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.footanim canvas { display: block; width: var(--fa-w); height: auto; }
+/* The source video stays on the page but invisible, because the keyed canvas is what you see. */
+.footanim video { position: absolute; left: 0; top: 0; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
+@media (max-width: 700px) { .footband { padding: 0 16px 8px; } }
+
+/* ---------- Picture that pops up when the bottom animation is clicked ---------- */
+/* BACKDROP is the soft dimming behind the picture: change the 0.45 to make it darker or lighter (0 = none). */
+.popupback {
+  position: fixed;
+  inset: 0;
+  z-index: 90; /* above the page and the music player, below the loading transitions */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  animation: p5-popback-in 200ms ease-out both;
+}
+.popupimg {
+  display: block;
+  max-width: min(80vw, 900px);
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.5));
+  animation: p5-pop-in 320ms cubic-bezier(0.2, 1.4, 0.4, 1) both; /* quick zoom-in with a little overshoot */
+}
+.popupback.closing { animation: p5-popback-out 180ms ease-in both; }
+.popupback.closing .popupimg { animation: p5-pop-out 180ms ease-in both; }
+@keyframes p5-popback-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes p5-popback-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes p5-pop-in { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+@keyframes p5-pop-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.85); } }
+@media (prefers-reduced-motion: reduce) {
+  .popupback, .popupimg, .popupback.closing, .popupback.closing .popupimg { animation: none; }
+}

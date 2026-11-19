@@ -3,8 +3,9 @@ each clip muted (your music player keeps playing).
 
 When each clip plays:
 
-    transition.mp4     The normal subway transition. Plays when you pick something on the main menu and
-                       when you go back to the main menu.
+    transition.mp4     The normal subway transition. Plays when you pick something on the main menu. It also
+                       plays when you go back to the main menu if back-to-menu.mp4 is missing.
+    back-to-menu.mp4   Plays only when you go BACK to the main menu (the "Main menu" button inside the app).
     experiment-a.mp4   Plays when you move to Experiment A from another section INSIDE the app (the tab buttons).
     experiment-b.mp4   Plays when you move to Experiment B from another section INSIDE the app.
     single-sample.mp4  Plays when you move to Single sample from another section INSIDE the app.
@@ -18,8 +19,8 @@ A section without a clip switches instantly.
 
 (A new name only starts to be used once a line for it is added in src/ExtrasShell.jsx.)
 
-If transition.mp4 is missing or can't be played, the app uses its built-in CSS loading transition for the
-main-menu trips instead. If a section clip is missing or can't be played, that section just switches instantly.
+If the clip for a main-menu trip is missing or can't be played, the app tries transition.mp4, and if that
+fails too it uses its built-in CSS loading transition. If a section clip is missing or can't be played, that section just switches instantly.
 
 Tuning the see-through part (src/chromaKey.js):
   Green clips:

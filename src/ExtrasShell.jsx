@@ -6,6 +6,7 @@ import App from "./App.jsx";
 import { capturePage } from "./pageSnapshot.js";
 import MainMenu from "./MainMenu.jsx";
 import MusicPlayer from "./MusicPlayer.jsx";
+import FooterAnimation from "./FooterAnimation.jsx";
 import Transition from "./Transition.jsx";
 import VideoTransition, { preloadTransitionVideo, clipUrl } from "./VideoTransition.jsx";
 import { baselineRows, BASELINE_TRUE_MEAN } from "./experiments.js";
@@ -19,13 +20,18 @@ const LABELS = {
 };
 
 // Green-screen clips in public/transition/.
-//  - DEFAULT_CLIP is the normal subway transition. It plays when you leave the main menu to enter the app and
-//    when you go back to the main menu.
+//  - DEFAULT_CLIP is the normal subway transition. It plays when you leave the main menu to enter the app.
+//  - BACK_CLIP plays only when you go BACK to the main menu. If it is missing or can't play, the default clip
+//    is used for that trip instead.
 //  - CLIPS are the section transitions. They play only when you move between sections INSIDE the app
 //    (the tabs), and only for sections that have a clip. A section without a clip switches instantly.
 // To give another section its own clip, put the file in public/transition/ and add a line here, for example:
 //   B: "experiment-b.mp4", challenge: "challenge.mp4", single: "single-sample.mp4"
 const DEFAULT_CLIP = "transition.mp4";
+const BACK_CLIP = "back-to-menu.mp4";
+// The back clip starts fading out this many milliseconds before it ends (it dims while still playing).
+// Raise it for a longer, gentler fade; set it to 0 for no early fade.
+const BACK_FADE_MS = 450;
 const CLIPS = { single: "single-sample.mp4", A: "experiment-a.mp4", B: "experiment-b.mp4", challenge: "challenge.mp4" };
 // How each clip is keyed. Everything not listed here is a green screen.
 //  - "shatter" (the Challenge clip): the clip is glass shards that shatter and zoom into black. The shards show a
@@ -50,7 +56,7 @@ export default function ExtrasShell() {
 
   // Once inside the app, load every section clip ahead of time so moving between sections doesn't wait.
   useEffect(() => {
-    if (screen === "app") Object.values(CLIPS).forEach((name) => preloadTransitionVideo(clipUrl(name)));
+    if (screen === "app") [...Object.values(CLIPS), BACK_CLIP].forEach((name) => preloadTransitionVideo(clipUrl(name)));
   }, [screen]);
 
   // Main menu <-> app. Ignores clicks while a transition is already running.
@@ -92,9 +98,16 @@ export default function ExtrasShell() {
     }
   }
 
-  // Which clip plays: the section's own clip for a tab change, otherwise the default clip.
-  const wanted = trans ? (trans.kind === "tab" ? CLIPS[trans.target] : DEFAULT_CLIP) : null;
-  const clip = wanted && !failedClips.includes(clipUrl(wanted)) ? clipUrl(wanted) : null;
+  // Which clip plays: the section's own clip for a tab change; the back clip (then the default clip) for a trip
+  // back to the menu; the default clip for entering the app from the menu. The first one that works is used.
+  const wantedClips = !trans
+    ? []
+    : trans.kind === "tab"
+      ? [CLIPS[trans.target]]
+      : trans.kind === "back"
+        ? [BACK_CLIP, DEFAULT_CLIP]
+        : [DEFAULT_CLIP];
+  const clip = wantedClips.filter(Boolean).map(clipUrl).find((u) => !failedClips.includes(u)) || null;
   const markFailed = (u) => setFailedClips((list) => (list.includes(u) ? list : [...list, u]));
 
   // A section clip that can't play: just switch sections without a transition.
@@ -111,7 +124,11 @@ export default function ExtrasShell() {
       {screen === "menu" && <MainMenu onOpen={go} N={baselineRows.length} trueMeanValue={BASELINE_TRUE_MEAN} />}
       {/* The app stays mounted (just hidden) so settings survive a trip back to the menu. */}
       <div hidden={screen !== "app"}>
-        <App openTab={openTab} onMenu={() => go("menu")} onNavigate={navigate} onPrepare={prepare} />
+        <div className="appframe">
+          <App openTab={openTab} onMenu={() => go("menu")} onNavigate={navigate} onPrepare={prepare} />
+          {/* Mounted only while the app is showing, so it starts playing each time you come in from the menu. */}
+          {screen === "app" && <FooterAnimation />}
+        </div>
       </div>
       {trans && clip && !trans.pending && (
         <VideoTransition
@@ -119,6 +136,7 @@ export default function ExtrasShell() {
           src={clip}
           keyColor={trans.kind === "tab" ? KEY_COLOR[trans.target] || "green" : "green"}
           snapshot={trans.snapshot || null}
+          fadeBeforeEndMs={trans.kind === "back" && clip === clipUrl(BACK_CLIP) ? BACK_FADE_MS : 0}
           label={LABELS[trans.target]}
           onMidpoint={swapScreen}
           onDone={() => setTrans(null)}

@@ -15,6 +15,7 @@ const MID_FALLBACK = 0.6; // ...or at this fraction of the clip if it never cove
 // page picture. 0 = pieces show the page untouched; 1 = pieces show only the clip's red glass.
 const SHATTER_TINT = 0.2;
 const START_TIMEOUT_MS = 4000; // give up (and use the CSS transition) if the clip hasn't started by then
+const FADE_OUT_MS = 350; // when a clip ends, its last frame fades out over this long instead of cutting away. 0 = cut.
 
 // One shared <video> per clip file, created the first time it is needed (or preloaded), so a clip is only
 // loaded once and then reused by every later transition that uses it.
@@ -105,8 +106,11 @@ function compile(gl, type, src) {
 // keyColor is "green" (the green screen is removed), "black" (near-black is removed instead) or "shatter"
 // (near-black is removed and the rest shows `snapshot`, a picture of the page the user was on; without a
 // snapshot, shatter falls back to "black").
-export default function VideoTransition({ src, keyColor = "green", snapshot = null, label, onMidpoint, onDone, onFail }) {
+// fadeBeforeEndMs: start fading the whole overlay out this long before the clip ends (the clip keeps playing while it
+// fades), so a clip that would otherwise cut away at its end dims out instead. 0 = off.
+export default function VideoTransition({ src, keyColor = "green", snapshot = null, fadeBeforeEndMs = 0, label, onMidpoint, onDone, onFail }) {
   const canvasRef = useRef(null);
+  const overlayRef = useRef(null);
   const cb = useRef({});
   cb.current = { onMidpoint, onDone, onFail };
   const mode = keyColor === "shatter" && !snapshot ? "black" : keyColor;
@@ -117,8 +121,10 @@ export default function VideoTransition({ src, keyColor = "green", snapshot = nu
     let gl;
     let raf = 0;
     let startTimer = 0;
+    let fadeTimer = 0;
     let finished = false;
     let midFired = false;
+    let fadeStarted = false;
     let peak = 0; // the most the clip has covered the screen so far
     const video = getVideo(src);
     const listeners = [];
@@ -210,19 +216,48 @@ export default function VideoTransition({ src, keyColor = "green", snapshot = nu
         applyRate();
       });
       listen("ratechange", applyRate);
-      listen("ended", () => {
-        if (finished) return;
-        finished = true;
+      // Hold the last frame and fade it out, rather than cutting away. Used when the clip ends, and (for clips that
+      // ask for it) the moment the clip's picture disappears.
+      const startFade = (ms = FADE_OUT_MS) => {
+        if (fadeStarted) return;
+        fadeStarted = true;
         if (!midFired) {
           midFired = true;
           cb.current.onMidpoint();
         }
-        cb.current.onDone();
+        const overlay = overlayRef.current;
+        if (overlay && ms > 0) {
+          overlay.style.transition = `opacity ${ms}ms ease-out`;
+          overlay.style.opacity = "0";
+          fadeTimer = setTimeout(() => cb.current.onDone(), ms);
+        } else {
+          cb.current.onDone();
+        }
+      };
+      listen("ended", () => {
+        if (finished) return;
+        finished = true;
+        startFade();
       });
 
       const frame = () => {
         raf = requestAnimationFrame(frame);
         if (video.readyState < 2) return;
+
+        // A little before the clip ends, start fading the overlay out while the clip is still playing.
+        if (fadeBeforeEndMs > 0 && !fadeStarted && video.duration > 0) {
+          const remainingMs = ((video.duration - video.currentTime) / (video.playbackRate || 1)) * 1000;
+          if (remainingMs <= fadeBeforeEndMs) startFade(fadeBeforeEndMs);
+        }
+
+        // How much of the screen this frame covers (needed to time the screen swap).
+        let cover = 0;
+        if (!midFired) {
+          pctx.drawImage(video, 0, 0, probe.width, probe.height);
+          cover = coverageOf(pctx.getImageData(0, 0, probe.width, probe.height).data, blackish ? "black" : "green");
+          peak = Math.max(peak, cover);
+        }
+
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
@@ -231,9 +266,6 @@ export default function VideoTransition({ src, keyColor = "green", snapshot = nu
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
         if (!midFired) {
-          pctx.drawImage(video, 0, 0, probe.width, probe.height);
-          const cover = coverageOf(pctx.getImageData(0, 0, probe.width, probe.height).data, blackish ? "black" : "green");
-          peak = Math.max(peak, cover);
           const covered = cover >= (blackish ? BLACK_COVER_THRESHOLD : COVER_THRESHOLD);
           // Black-keyed clip: the glass may never cover 100%, so also swap just as the coverage starts to fall
           // after its peak (the zoom into black begins), while the screen is still mostly covered.
@@ -265,6 +297,7 @@ export default function VideoTransition({ src, keyColor = "green", snapshot = nu
       finished = true;
       cancelAnimationFrame(raf);
       clearTimeout(startTimer);
+      clearTimeout(fadeTimer);
       listeners.forEach(([name, fn]) => video.removeEventListener(name, fn));
       video.pause(); // the shared clip stays loaded for the next transition
       const lose = gl && gl.getExtension("WEBGL_lose_context");
@@ -273,7 +306,7 @@ export default function VideoTransition({ src, keyColor = "green", snapshot = nu
   }, [src, mode, snapshot]);
 
   return (
-    <div className="p5vt" role="status" aria-live="polite" aria-label={`Loading ${label}`}>
+    <div ref={overlayRef} className="p5vt" role="status" aria-live="polite" aria-label={`Loading ${label}`}>
       <canvas ref={canvasRef} />
     </div>
   );
