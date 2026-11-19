@@ -77,7 +77,7 @@ export default function OrderGrid({ rows, sampledSet, maxWait, onHover }) {
       ref={canvasRef}
       width={WIDTH}
       height={HEIGHT}
-      style={{ width: WIDTH, height: HEIGHT, maxWidth: "100%" }}
+      style={{ width: WIDTH, height: "auto", maxWidth: "100%" }}
       onMouseMove={handleMove}
       onMouseLeave={() => onHover(null)}
     />
