@@ -63,7 +63,13 @@ export default function MainMenu({ onOpen, N, trueMeanValue }) {
             seed), with its population, method, n, and repetition or start count. The same seed and settings always
             give the same results.
           </li>
-          <li>The theme is inspired by Persona 5.</li>
+          <li>
+            The theme is inspired by{" "}
+            <a href="https://store.steampowered.com/app/1687950/Persona_5_Royal/" target="_blank" rel="noopener noreferrer">
+              Persona 5
+            </a>
+            .
+          </li>
         </ul>
       </div>
     </div>

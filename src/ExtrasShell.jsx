@@ -1,12 +1,13 @@
-// EXTRAS: wraps the app with a separate main-menu page, the loading transition and the music player.
+// EXTRAS: wraps the app with a separate main-menu page, the loading transitions and the music player.
 // The player stays mounted the whole time, so the music keeps playing across screens and transitions.
 // To remove all of it, see the removal list in src/extras.css.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import App from "./App.jsx";
+import { capturePage } from "./pageSnapshot.js";
 import MainMenu from "./MainMenu.jsx";
 import MusicPlayer from "./MusicPlayer.jsx";
 import Transition from "./Transition.jsx";
-import VideoTransition, { preloadTransitionVideo } from "./VideoTransition.jsx";
+import VideoTransition, { preloadTransitionVideo, clipUrl } from "./VideoTransition.jsx";
 import { baselineRows, BASELINE_TRUE_MEAN } from "./experiments.js";
 
 const LABELS = {
@@ -17,25 +18,73 @@ const LABELS = {
   challenge: "Challenge: reordering",
 };
 
+// Green-screen clips in public/transition/.
+//  - DEFAULT_CLIP is the normal subway transition. It plays when you leave the main menu to enter the app and
+//    when you go back to the main menu.
+//  - CLIPS are the section transitions. They play only when you move between sections INSIDE the app
+//    (the tabs), and only for sections that have a clip. A section without a clip switches instantly.
+// To give another section its own clip, put the file in public/transition/ and add a line here, for example:
+//   B: "experiment-b.mp4", challenge: "challenge.mp4", single: "single-sample.mp4"
+const DEFAULT_CLIP = "transition.mp4";
+const CLIPS = { single: "single-sample.mp4", A: "experiment-a.mp4", B: "experiment-b.mp4", challenge: "challenge.mp4" };
+// How each clip is keyed. Everything not listed here is a green screen.
+//  - "shatter" (the Challenge clip): the clip is glass shards that shatter and zoom into black. The shards show a
+//    picture of the page the user was on (taken just before the transition), and the black is the new page
+//    underneath. If the picture can't be taken, the shards are plain red glass instead.
+//  - "black": near-black is see-through, with no page picture.
+const KEY_COLOR = { challenge: "shatter" };
+
 export default function ExtrasShell() {
   const [screen, setScreen] = useState("menu"); // "menu" or "app"
   const [openTab, setOpenTab] = useState(null); // object, so choosing the same tab again still applies
-  const [trans, setTrans] = useState(null); // { target } while a transition is playing
-  // The green-screen clip (public/transition/transition.mp4) is tried first. If it is missing or can't play,
-  // this flips to true and the built-in CSS transition is used from then on.
-  const [videoFailed, setVideoFailed] = useState(false);
+  // { target, kind } while a transition is playing. kind: "enter" (menu to app), "back" (app to menu) or
+  // "tab" (between sections inside the app).
+  const [trans, setTrans] = useState(null);
+  const [failedClips, setFailedClips] = useState([]); // clip addresses that are missing or can't play
+  const snapRef = useRef(null); // { target, at, promise }: a picture of the current page, taken ahead of a click
 
-  // Start loading the clip as soon as the app opens, so the first transition doesn't wait for the file.
+  // Start loading the default clip as soon as the app opens, so the first transition doesn't wait for it.
   useEffect(() => {
-    preloadTransitionVideo();
+    preloadTransitionVideo(clipUrl(DEFAULT_CLIP));
   }, []);
 
-  // Ignore clicks while a transition is already running.
-  const go = (target) => setTrans((cur) => cur || { target });
+  // Once inside the app, load every section clip ahead of time so moving between sections doesn't wait.
+  useEffect(() => {
+    if (screen === "app") Object.values(CLIPS).forEach((name) => preloadTransitionVideo(clipUrl(name)));
+  }, [screen]);
+
+  // Main menu <-> app. Ignores clicks while a transition is already running.
+  const go = (target) => setTrans((cur) => cur || { target, kind: target === "menu" ? "back" : "enter" });
+
+  // Moving between sections inside the app (the tab buttons).
+  const currentTab = openTab ? openTab.tab : "single";
+  // Take the picture of the current page as soon as the pointer reaches a section's tab (and again when it is
+  // pressed), so it is ready by the time the click lands.
+  const prepare = (target) => {
+    if (trans || target === currentTab || KEY_COLOR[target] !== "shatter") return;
+    snapRef.current = { target, at: Date.now(), promise: capturePage() };
+  };
+  const navigate = (target) => {
+    if (trans || target === currentTab) return;
+    const url = CLIPS[target] && clipUrl(CLIPS[target]);
+    if (!url || failedClips.includes(url)) {
+      setOpenTab({ tab: target }); // no clip for this section: switch straight away
+    } else if (KEY_COLOR[target] === "shatter") {
+      const ready = snapRef.current;
+      const promise = ready && ready.target === target && Date.now() - ready.at < 5000 ? ready.promise : capturePage();
+      snapRef.current = null;
+      setTrans({ target, kind: "tab", pending: true, snapshot: null }); // waits for the picture, if it isn't ready
+      promise.then((snapshot) =>
+        setTrans((cur) => (cur && cur.target === target && cur.pending ? { ...cur, pending: false, snapshot } : cur))
+      );
+    } else {
+      setTrans({ target, kind: "tab" });
+    }
+  };
 
   function swapScreen() {
     if (!trans) return;
-    if (trans.target === "menu") {
+    if (trans.kind === "back") {
       setScreen("menu");
     } else {
       setOpenTab({ tab: trans.target });
@@ -43,23 +92,42 @@ export default function ExtrasShell() {
     }
   }
 
+  // Which clip plays: the section's own clip for a tab change, otherwise the default clip.
+  const wanted = trans ? (trans.kind === "tab" ? CLIPS[trans.target] : DEFAULT_CLIP) : null;
+  const clip = wanted && !failedClips.includes(clipUrl(wanted)) ? clipUrl(wanted) : null;
+  const markFailed = (u) => setFailedClips((list) => (list.includes(u) ? list : [...list, u]));
+
+  // A section clip that can't play: just switch sections without a transition.
+  useEffect(() => {
+    if (trans && trans.kind === "tab" && !clip) {
+      setOpenTab({ tab: trans.target });
+      setTrans(null);
+    }
+  }, [trans, clip]);
+
   return (
     <>
       <MusicPlayer />
       {screen === "menu" && <MainMenu onOpen={go} N={baselineRows.length} trueMeanValue={BASELINE_TRUE_MEAN} />}
       {/* The app stays mounted (just hidden) so settings survive a trip back to the menu. */}
       <div hidden={screen !== "app"}>
-        <App openTab={openTab} onMenu={() => go("menu")} />
+        <App openTab={openTab} onMenu={() => go("menu")} onNavigate={navigate} onPrepare={prepare} />
       </div>
-      {trans && !videoFailed && (
+      {trans && clip && !trans.pending && (
         <VideoTransition
+          key={clip}
+          src={clip}
+          keyColor={trans.kind === "tab" ? KEY_COLOR[trans.target] || "green" : "green"}
+          snapshot={trans.snapshot || null}
           label={LABELS[trans.target]}
           onMidpoint={swapScreen}
           onDone={() => setTrans(null)}
-          onFail={() => setVideoFailed(true)}
+          onFail={markFailed}
         />
       )}
-      {trans && videoFailed && <Transition label={LABELS[trans.target]} onMidpoint={swapScreen} onDone={() => setTrans(null)} />}
+      {trans && !clip && trans.kind !== "tab" && (
+        <Transition label={LABELS[trans.target]} onMidpoint={swapScreen} onDone={() => setTrans(null)} />
+      )}
     </>
   );
 }

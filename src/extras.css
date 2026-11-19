@@ -7,11 +7,11 @@
    TO REMOVE ALL OF IT:
      1. Delete these files: src/extras.css, src/ExtrasShell.jsx, src/MainMenu.jsx,
         src/MusicPlayer.jsx, src/Transition.jsx, src/VideoTransition.jsx, src/chromaKey.js,
-        checks/check_chromakey.mjs
+        src/pageSnapshot.js, checks/check_chromakey.mjs, and run: npm uninstall html-to-image
      2. In src/main.jsx delete the lines marked EXTRAS (the ExtrasShell import, the extras.css import and
         USE_EXTRAS) and render <App /> directly.
-     3. In src/App.jsx delete the lines marked EXTRAS (the openTab/onMenu props note, the useEffect and
-        the back button) and the useEffect import if nothing else uses it.
+     3. In src/App.jsx delete the lines marked EXTRAS (the props note, the useEffect, the back button, the
+        onPrepare/onNavigate handlers on the tab buttons) and the useEffect import if nothing else uses it.
      4. Optionally delete public/music/ and public/transition/ (your mp3 and mp4 stay on disk until you do).
    Nothing else depends on these files. The sampling code is untouched. */
 
@@ -318,3 +318,7 @@ body.p5 .page { padding-top: 24px; }
 /* ---------- Green-screen video transition (keyed live in a canvas) ---------- */
 .p5vt { position: fixed; inset: 0; z-index: 100; cursor: progress; }
 .p5vt canvas { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Link inside the "About the data" box on the main menu. */
+.menuabout a { color: #e60012; font-weight: bold; text-decoration: underline; }
+.menuabout a:hover, .menuabout a:focus-visible { background: #000; color: #fff; outline: 2px solid #000; }

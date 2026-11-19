@@ -286,7 +286,9 @@ function SingleSample() {
 
 // openTab and onMenu are EXTRAS: the main-menu shell (src/ExtrasShell.jsx) uses them to open a tab and to
 // offer a way back. Without the shell the app works the same with no props.
-export default function App({ openTab, onMenu } = {}) {
+// onNavigate and onPrepare (EXTRAS) let the shell play a section's own transition when you move between
+// sections, and get ready for it (take a picture of the page) as the pointer reaches a tab.
+export default function App({ openTab, onMenu, onNavigate, onPrepare } = {}) {
   const [tab, setTab] = useState("single");
   useEffect(() => { if (openTab) setTab(openTab.tab); }, [openTab]); // EXTRAS
   // Experiment settings are shared by tabs A and B, so a result is only reused when they truly match.
@@ -308,8 +310,20 @@ export default function App({ openTab, onMenu } = {}) {
 
       <div className="tabs" role="tablist">
         {TABS.map((t) => (
-          <label key={t.id} className={"chip" + (tab === t.id ? " on" : "")}>
-            <input type="radio" name="tab" checked={tab === t.id} onChange={() => setTab(t.id)} /> {t.label}
+          <label
+            key={t.id}
+            className={"chip" + (tab === t.id ? " on" : "")}
+            onPointerEnter={() => onPrepare && onPrepare(t.id)} /* EXTRAS: onPrepare */
+            onPointerDown={() => onPrepare && onPrepare(t.id)}
+          >
+            <input
+              type="radio"
+              name="tab"
+              checked={tab === t.id}
+              onFocus={() => onPrepare && onPrepare(t.id)}
+              onChange={() => (onNavigate ? onNavigate(t.id) : setTab(t.id))} /* EXTRAS: onNavigate */
+            />{" "}
+            {t.label}
           </label>
         ))}
       </div>
