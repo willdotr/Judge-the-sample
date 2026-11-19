@@ -255,3 +255,6 @@ body.p5 .chtable table { border: 4px solid #000; box-shadow: 8px 8px 0 #000; }
 body.p5 .chtable th { background: #000; color: #fff; text-transform: uppercase; font-size: 0.78rem; }
 body.p5 .chtable th, body.p5 .chtable td { border-color: #000; }
 body.p5 .popmod { color: var(--p5-red); }
+
+/* Credit line under the title. */
+body.p5 .credit { color: #fff; text-shadow: 2px 2px 0 #000; letter-spacing: 0.04em; margin-top: -4px; }

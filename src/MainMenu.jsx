@@ -30,6 +30,7 @@ export default function MainMenu({ onOpen, N, trueMeanValue }) {
   return (
     <div className="page mainmenu">
       <h1>Judge the Sample</h1>
+      <div className="credit">Created by Willie Robinson</div>
       <div className="menusub">Clinic waiting times: a sampling activity</div>
       <p className="menuq">
         Which sampling method would you trust for this population, at what sample size, and with what limits?
