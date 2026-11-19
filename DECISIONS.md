@@ -25,8 +25,8 @@ my agent about it, and do not edit it afterwards; add a dated revision below ins
 
 For each stage: the option I chose, why, and what it is meant to help a user learn.
 
-- Stage 2, visualization (include one visual feature meant to reveal a sampling problem): I chose to have a grid of all 10k appointments in file order as the main view. Having a histogram of waits and weekday sample dots as the secondary view.  I want whoever sees it to understand where in the clinic's week the sampled appointments are at. Having the weekday be colored is a feature I thought of to reveal a sampling problem, since it shows whether the sample comes from all five days or only some. It's meant to help someone see where the sample sits and how its mean compares with the true mean of 22.6842 minutes.
-- Stage 3, sampling interactions and stratification column:
+- Stage 2, visualization (include one visual feature meant to reveal a sampling problem): **I chose to have a grid of all 10k appointments in file order as the main view. Having a histogram of waits and weekday sample dots as the secondary view.  I want whoever sees it to understand where in the clinic's week the sampled appointments are at. Having the weekday be colored is a feature I thought of to reveal a sampling problem, since it shows whether the sample comes from all five days or only some. It's meant to help someone see where the sample sits and how its mean compares with the true mean of 22.6842 minutes.**
+- Stage 3, sampling interactions and stratification column: **I chose a method selector that shows one sampling method at a time, that way the grid is large enough to read and a user can see where one methods sampled appointments sit before switching to the next. The user can change the sample size, the seed, and the stratification column. There is also an explanation box shows how the current sample was chosen. Also, I stratify on weekday because I wanted a simple allocation..**
 - Stage 4, presentation of the method comparison and sample-size experiments:
 - Stage 5, challenge controls and my alternative method or correction:
 
