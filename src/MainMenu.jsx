@@ -63,7 +63,7 @@ export default function MainMenu({ onOpen, N, trueMeanValue }) {
             seed), with its population, method, n, and repetition or start count. The same seed and settings always
             give the same results.
           </li>
-          <li>The music player at the top right plays the mp3 at <code>public/music/theme.mp3</code>.</li>
+          <li>The theme is inspired by Persona 5.</li>
         </ul>
       </div>
     </div>

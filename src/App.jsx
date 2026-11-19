@@ -9,6 +9,7 @@ import RuleBox from "./RuleBox.jsx";
 import ExperimentView from "./ExperimentView.jsx";
 import Challenge from "./Challenge.jsx";
 
+const MSG_IMAGE = `${import.meta.env.BASE_URL}messagebox/messagebox.png`;
 const N = population.length;
 const MAX_WAIT = Math.max(...population.map((r) => r.wait_time));
 const TRUE_MEAN = trueMean(population);
@@ -125,6 +126,7 @@ function SingleSample() {
   const [seed, setSeed] = useState(2026);
   const [column, setColumn] = useState("weekday");
   const [hover, setHover] = useState(null);
+  const [msgImageOk, setMsgImageOk] = useState(true); // false if public/messagebox/messagebox.png is missing
 
   const nInvalid = nText.trim() === "" || !Number.isInteger(Number(nText)) || Number(nText) < 1 || Number(nText) > N;
 
@@ -223,16 +225,30 @@ function SingleSample() {
             Tue, Wed, Thu, Fri. Cell colour is the wait; <strong>outlined cells are the sampled
             appointments</strong>.
           </p>
-          <OrderGrid rows={population} sampledSet={sampledSet} maxWait={MAX_WAIT} onHover={setHover} />
-          <div className="hoverinfo">
-            {h ? (
-              <>
-                Visit {h.visit_id}: week {h.week}, {h.weekday}, slot {h.slot}, {h.visit_type}, wait{" "}
-                <strong>{h.wait_time} min</strong> — {sampledSet.has(hover) ? "SAMPLED" : "not sampled"}
-              </>
-            ) : (
-              "Hover over a cell to see that appointment."
-            )}
+          <div className="gridrow">
+            <OrderGrid rows={population} sampledSet={sampledSet} maxWait={MAX_WAIT} onHover={setHover} />
+            {/* Hover details sit to the right of the grid in a message box. */}
+            <div className={"msgbox" + (msgImageOk ? "" : " msgplain")} aria-live="polite">
+              {msgImageOk && <img className="msgimg" src={MSG_IMAGE} alt="" onError={() => setMsgImageOk(false)} />}
+              <div className="msgname">Appointment</div>
+              <div className="msgtext">
+                {h ? (
+                  <>
+                    <div>
+                      Visit {h.visit_id} · week {h.week}, {h.weekday}, slot {h.slot}
+                    </div>
+                    <div>
+                      {h.visit_type} · wait <strong>{h.wait_time} min</strong>
+                    </div>
+                    <div className={"msgstate" + (sampledSet.has(hover) ? " sampled" : "")}>
+                      {sampledSet.has(hover) ? "SAMPLED" : "not sampled"}
+                    </div>
+                  </>
+                ) : (
+                  "Hover over a cell to see that appointment."
+                )}
+              </div>
+            </div>
           </div>
           <div className="colorbar">
             <span>0 min</span>
