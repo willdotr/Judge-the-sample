@@ -14,7 +14,7 @@ fi
 
 echo
 echo "Starting the app. Open this address in your browser:"
-echo "  http://localhost:5173/"
+echo "  http://localhost:5173/Judge-the-sample/"
 echo "(If that port is busy, Vite picks the next one and prints the real address below.)"
 echo "Press Ctrl+C to stop."
 echo
