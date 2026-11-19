@@ -2,13 +2,39 @@ body { font-family: system-ui, sans-serif; margin: 0; color: #222; background: #
 .page { padding: 16px 20px; max-width: 1400px; }
 h1 { font-size: 1.4rem; margin: 0 0 8px; }
 h2 { font-size: 1.1rem; margin: 0 0 4px; }
-.summary { border: 1px solid #bbb; padding: 10px 12px; margin: 12px 0 18px; display: grid; gap: 4px; max-width: 760px; }
+.intro { margin: 0 0 10px; }
+.controls { border: 1px solid #bbb; padding: 10px 12px; margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; max-width: 900px; }
+.controls fieldset { border: 0; margin: 0; padding: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.controls legend { float: left; margin-right: 8px; padding: 0; font-weight: bold; }
+.controls input[type="number"] { width: 90px; }
+.chip { border: 1px solid #888; padding: 3px 10px; cursor: pointer; }
+.chip.on { background: #222; color: #fff; }
+.hint { font-size: 0.85rem; flex-basis: 100%; }
+.blocked { font-weight: bold; color: #a61e1e; }
+.bigblock { border: 2px solid #a61e1e; padding: 8px 10px; margin: 0 0 14px; max-width: 900px; }
+.summary { border: 1px solid #bbb; padding: 10px 12px; margin: 0 0 12px; display: grid; gap: 4px; max-width: 900px; }
 .num { font-variant-numeric: tabular-nums; font-weight: bold; }
 .num.sample { color: #c2255c; }
-.temp { font-weight: bold; color: #7a4b00; background: #fff4d6; padding: 4px 6px; }
+.single { font-weight: bold; color: #7a4b00; background: #fff4d6; padding: 4px 6px; }
+.rulebox { border: 1px solid #bbb; padding: 10px 12px; margin: 0 0 18px; max-width: 900px; }
+.rulebox p { margin: 6px 0; }
+.rulebox table { border-collapse: collapse; margin-top: 6px; font-size: 0.9rem; }
+.rulebox th, .rulebox td { border: 1px solid #bbb; padding: 3px 8px; text-align: right; }
+.rulebox th:first-child, .rulebox td:first-child { text-align: left; }
+.rulebox .total td { font-weight: bold; }
 .views { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
 .note { font-size: 0.9rem; max-width: 560px; margin: 0 0 8px; }
 .hoverinfo { min-height: 1.4em; margin: 6px 0; font-size: 0.9rem; }
 .colorbar { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
 .ramp { display: inline-block; width: 200px; height: 12px; border: 1px solid #999; }
 .legend { font-size: 0.9rem; margin-top: 6px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.expcard { border: 1px solid #bbb; padding: 10px 12px; margin: 0 0 18px; max-width: 1240px; }
+.explegend { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; margin-bottom: 10px; }
+.exprow { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-start; padding: 10px 0; border-top: 1px solid #ccc; }
+.rowlabel { width: 270px; font-size: 0.9rem; display: grid; gap: 2px; }
+.rowlabel h3 { margin: 0 0 2px; font-size: 1rem; }
+.stripcell, .barcell { font-size: 0.85rem; }
+.axislabel { text-align: center; font-size: 0.8rem; }
+.small { font-size: 0.82rem; }
+.reuse { font-style: italic; }

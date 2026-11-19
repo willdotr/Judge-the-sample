@@ -5,12 +5,12 @@ const BIN = 5; // minutes per bar
 const W = 560;
 const M = { left: 52, right: 16, top: 40, bottom: 34 };
 const BARS_H = 200;
-const DOT_R = 3;
-const DOT_STEP = 7;
 const GAP = 14;
+const MAX_DOTS_H = 140; // the dot panel never grows taller than this, however large n is
 
 // Secondary view: histogram of ALL waits (as % of appointments per bin) with the sampled
 // appointments as dots underneath on the same minutes axis, coloured by weekday.
+// sampleMeanValue is the method's estimate, or null when no sample could be drawn.
 export default function Histogram({ rows, sampledIdx, trueMeanValue, sampleMeanValue }) {
   const maxWait = Math.max(...rows.map((r) => r.wait_time));
   const nBins = Math.floor(maxWait / BIN) + 1;
@@ -30,6 +30,10 @@ export default function Histogram({ rows, sampledIdx, trueMeanValue, sampleMeanV
     return { x: r.wait_time + 0.5, level, weekday: r.weekday };
   });
   const maxStack = Math.max(1, ...stackCount);
+  // Normal spacing for small samples; squeezed (and slightly transparent) for very large ones.
+  const DOT_STEP = Math.min(7, MAX_DOTS_H / maxStack);
+  const DOT_R = Math.max(0.6, Math.min(3, DOT_STEP / 2));
+  const dense = DOT_STEP < 4;
 
   const plotW = W - M.left - M.right;
   const dotsH = maxStack * DOT_STEP + 6;
@@ -44,7 +48,8 @@ export default function Histogram({ rows, sampledIdx, trueMeanValue, sampleMeanV
   const ticksY = [];
   for (let p = 0; p <= yMax; p += 5) ticksY.push(p);
 
-  const labelsFlip = sampleMeanValue < trueMeanValue; // keep the two labels from overlapping
+  const hasEstimate = sampleMeanValue !== null;
+  const labelsFlip = hasEstimate && sampleMeanValue < trueMeanValue; // keep the two labels apart
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width={W} style={{ maxWidth: "100%" }} role="img"
@@ -71,7 +76,8 @@ export default function Histogram({ rows, sampledIdx, trueMeanValue, sampleMeanV
       <text x={M.left} y={dotTop - 3} fontSize="11" fill="#333">Sampled appointments (one dot each)</text>
       {dots.map((d, k) => (
         <circle key={k} cx={x(d.x)} cy={dotTop + dotsH - 3 - d.level * DOT_STEP - DOT_R}
-          r={DOT_R} fill={WEEKDAY_COLORS[d.weekday]} stroke="#fff" strokeWidth="0.5" />
+          r={DOT_R} fill={WEEKDAY_COLORS[d.weekday]} fillOpacity={dense ? 0.7 : 1}
+          stroke={dense ? "none" : "#fff"} strokeWidth="0.5" />
       ))}
 
       {/* x axis */}
@@ -93,12 +99,16 @@ export default function Histogram({ rows, sampledIdx, trueMeanValue, sampleMeanV
         textAnchor={labelsFlip ? "start" : "end"}>
         True mean {trueMeanValue.toFixed(2)}
       </text>
-      <line x1={x(sampleMeanValue)} x2={x(sampleMeanValue)} y1={M.top - 8} y2={lineBottom}
-        stroke="#c2255c" strokeWidth="2" strokeDasharray="6 3" />
-      <text x={x(sampleMeanValue) + (labelsFlip ? -4 : 4)} y={30} fontSize="12" fontWeight="bold"
-        fill="#c2255c" textAnchor={labelsFlip ? "end" : "start"}>
-        Sample mean {sampleMeanValue.toFixed(2)}
-      </text>
+      {hasEstimate && (
+        <>
+          <line x1={x(sampleMeanValue)} x2={x(sampleMeanValue)} y1={M.top - 8} y2={lineBottom}
+            stroke="#c2255c" strokeWidth="2" strokeDasharray="6 3" />
+          <text x={x(sampleMeanValue) + (labelsFlip ? -4 : 4)} y={30} fontSize="12" fontWeight="bold"
+            fill="#c2255c" textAnchor={labelsFlip ? "end" : "start"}>
+            Sample estimate {sampleMeanValue.toFixed(2)}
+          </text>
+        </>
+      )}
     </svg>
   );
 }

@@ -1,0 +1,208 @@
+/* PERSONA 5-STYLE THEME (decoration only). Pure CSS: no images, fonts or scripts are downloaded.
+   Everything here is scoped to body.p5. To remove the theme: delete the two theme lines in
+   src/main.jsx (the import of this file and the classList line), then delete this file.
+   Nothing else in the app depends on it. Data colours (grid ramp, weekday dots, mean lines)
+   are NOT changed by the theme, so the charts read exactly the same. */
+
+body.p5 {
+  --p5-red: #e60012;
+  --p5-deep: #7a0008;
+  color: #fff;
+  background: #b3000f;
+  font-family: "Arial Narrow", "Segoe UI", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* Background layer 1: black and dark-red shards with white slashes, like the main menu. */
+body.p5::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-size: 100% 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'%3E%3Cpolygon fill='%23e60012' points='0,0 1000,0 1000,1000 0,1000'/%3E%3Cpolygon fill='%23000' fill-opacity='.22' points='0,880 1000,120 1000,260 0,1000'/%3E%3Cpolygon fill='%237a0008' points='0,0 560,0 0,720'/%3E%3Cpolygon fill='%23000' points='0,0 400,0 0,500'/%3E%3Cpolygon fill='%23fff' points='400,0 428,0 0,528 0,500'/%3E%3Cpolygon fill='%237a0008' points='1000,1000 440,1000 1000,280'/%3E%3Cpolygon fill='%23000' points='1000,1000 600,1000 1000,500'/%3E%3Cpolygon fill='%23fff' points='600,1000 572,1000 1000,472 1000,500'/%3E%3Cpolygon fill='%23000' points='1000,0 1000,150 780,0'/%3E%3Cpolygon fill='%23000' points='0,1000 0,860 200,1000'/%3E%3C/svg%3E");
+}
+
+/* Background layer 2: halftone dots fading in from the corners. */
+body.p5::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.45) 1.6px, transparent 2.2px);
+  background-size: 11px 11px;
+  -webkit-mask-image: linear-gradient(135deg, #000 0%, transparent 30%, transparent 70%, #000 100%);
+  mask-image: linear-gradient(135deg, #000 0%, transparent 30%, transparent 70%, #000 100%);
+}
+
+body.p5 ::selection { background: #000; color: #fff; }
+body.p5 .page { padding-bottom: 48px; }
+
+/* Title: a black plate with a white offset and a star, skewed like the menu banners. */
+body.p5 h1 {
+  display: inline-block;
+  position: relative;
+  font: italic 900 2.1rem/1.1 Impact, "Arial Black", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: #000;
+  padding: 10px 56px 10px 20px;
+  margin: 6px 0 20px 8px;
+  transform: skew(-9deg) rotate(-1.2deg);
+  box-shadow: 8px 8px 0 #fff;
+  border-left: 14px solid #fff;
+}
+body.p5 h1::after {
+  content: "\2605";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%) skew(9deg);
+  color: var(--p5-red);
+  font-size: 1.9rem;
+  text-shadow: 2px 2px 0 #fff;
+}
+
+/* Section headings: black plates with a red star. */
+body.p5 h2 {
+  display: inline-block;
+  font: italic 900 1.1rem/1.2 Impact, "Arial Black", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: #000;
+  padding: 4px 16px 4px 12px;
+  margin: 0 0 10px;
+  transform: skew(-9deg);
+  box-shadow: 4px 4px 0 var(--p5-red);
+}
+body.p5 h2::before { content: "\2605 "; color: var(--p5-red); }
+
+/* Intro: a white strip with black text, slightly angled. */
+body.p5 .intro {
+  display: inline-block;
+  color: #000;
+  background: #fff;
+  font-weight: bold;
+  padding: 6px 16px;
+  max-width: 880px;
+  transform: skew(-4deg);
+  box-shadow: 5px 5px 0 #000;
+}
+body.p5 code { background: #000; color: #fff; padding: 0 5px; }
+
+/* Cards: white panels, thick black frame, hard black shadow, red corner tab. */
+body.p5 .controls,
+body.p5 .summary,
+body.p5 .rulebox,
+body.p5 .views section {
+  position: relative;
+  background: #fff;
+  color: #111;
+  border: 4px solid #000;
+  box-shadow: 10px 10px 0 #000;
+  padding: 14px 18px;
+}
+body.p5 .controls::after,
+body.p5 .summary::after,
+body.p5 .rulebox::after,
+body.p5 .views section::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  border-style: solid;
+  border-width: 0 0 26px 26px;
+  border-color: transparent transparent var(--p5-red) transparent;
+}
+body.p5 .views section { padding-bottom: 24px; }
+body.p5 .views { gap: 44px; padding-right: 12px; }
+body.p5 .controls, body.p5 .summary, body.p5 .rulebox { margin-bottom: 28px; }
+body.p5 .rulebox h2, body.p5 .views section h2 { background: var(--p5-red); box-shadow: 4px 4px 0 #000; }
+body.p5 .rulebox h2::before, body.p5 .views section h2::before { color: #fff; }
+
+/* Method chips look like menu options: black when off, red with a white edge when selected. */
+body.p5 .chip {
+  position: relative;
+  border: 3px solid #000;
+  background: #000;
+  color: #fff;
+  font: italic 900 1rem/1 Impact, "Arial Black", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transform: skew(-9deg);
+  padding: 7px 20px;
+}
+body.p5 .chip input { position: absolute; opacity: 0; pointer-events: none; }
+body.p5 .chip:focus-within { outline: 3px solid var(--p5-red); outline-offset: 2px; }
+body.p5 .chip.on {
+  background: var(--p5-red);
+  border-color: #000;
+  box-shadow: 5px 5px 0 #000, inset 0 0 0 2px #fff;
+  transform: skew(-9deg) translateX(4px);
+}
+body.p5 .chip.on::before { content: "\25B6 "; font-size: 0.8em; }
+
+body.p5 .controls legend { color: var(--p5-red); text-transform: uppercase; font-weight: 900; letter-spacing: 0.05em; }
+body.p5 .controls input[type="number"],
+body.p5 .controls select {
+  border: 3px solid #000;
+  background: #fff;
+  padding: 4px 8px;
+  font-weight: bold;
+}
+body.p5 .controls input[type="number"]:focus,
+body.p5 .controls select:focus { outline: 3px solid var(--p5-red); outline-offset: 1px; }
+body.p5 .hint { color: #444; }
+
+/* Key numbers. */
+body.p5 .num { font: italic 900 1.15rem Impact, "Arial Black", sans-serif; letter-spacing: 0.03em; }
+body.p5 .num.sample { color: var(--p5-red); }
+
+/* Single-sample banner: black with red diagonal stripes at the edge. */
+body.p5 .single {
+  color: #fff;
+  background:
+    repeating-linear-gradient(135deg, var(--p5-red) 0 8px, #000 8px 16px) left / 14px 100% no-repeat,
+    #000;
+  padding: 7px 12px 7px 26px;
+  font-weight: bold;
+}
+
+/* Warnings. */
+body.p5 .blocked { color: var(--p5-red); }
+body.p5 .bigblock { background: #fff; color: var(--p5-red); border: 4px solid #000; box-shadow: 8px 8px 0 #000; }
+
+/* Allocation table. */
+body.p5 .rulebox th { background: #000; color: #fff; text-transform: uppercase; font-size: 0.8rem; }
+body.p5 .rulebox th, body.p5 .rulebox td { border-color: #000; }
+body.p5 .rulebox .total td { background: #ffd9dc; }
+
+/* Chart side text. */
+body.p5 .hoverinfo { border-left: 5px solid var(--p5-red); padding-left: 8px; }
+
+/* Experiment tabs: same card treatment as the other panels. */
+body.p5 .expcard {
+  position: relative;
+  background: #fff;
+  color: #111;
+  border: 4px solid #000;
+  box-shadow: 10px 10px 0 #000;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+}
+body.p5 .expcard::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  border-style: solid;
+  border-width: 0 0 26px 26px;
+  border-color: transparent transparent var(--p5-red) transparent;
+}
+body.p5 .exprow { border-top-color: #000; }
+body.p5 .rowlabel h3 { text-transform: uppercase; font: italic 900 1rem Impact, "Arial Black", sans-serif; color: var(--p5-red); }
+body.p5 .page > .note { color: #fff; background: #000; display: inline-block; padding: 4px 10px; }

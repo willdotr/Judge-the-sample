@@ -26,8 +26,8 @@ my agent about it, and do not edit it afterwards; add a dated revision below ins
 For each stage: the option I chose, why, and what it is meant to help a user learn.
 
 - Stage 2, visualization (include one visual feature meant to reveal a sampling problem): **I chose to have a grid of all 10k appointments in file order as the main view. Having a histogram of waits and weekday sample dots as the secondary view.  I want whoever sees it to understand where in the clinic's week the sampled appointments are at. Having the weekday be colored is a feature I thought of to reveal a sampling problem, since it shows whether the sample comes from all five days or only some. It's meant to help someone see where the sample sits and how its mean compares with the true mean of 22.6842 minutes.**
-- Stage 3, sampling interactions and stratification column: **I chose a method selector that shows one sampling method at a time, that way the grid is large enough to read and a user can see where one methods sampled appointments sit before switching to the next. The user can change the sample size, the seed, and the stratification column. There is also an explanation box shows how the current sample was chosen. Also, I stratify on weekday because I wanted a simple allocation..**
-- Stage 4, presentation of the method comparison and sample-size experiments:
+- Stage 3, sampling interactions and stratification column: **I chose a method selector that shows one sampling method at a time, that way the grid is large enough to read and a user can see where one methods sampled appointments sit before switching to the next. The user can change the sample size, the seed, and the stratification column. There is also an explanation box shows how the current sample was chosen. Also, I stratify on weekday because I wanted a simple allocation.**
+- Stage 4, presentation of the method comparison and sample-size experiments: **I chose a strip of every estimate for each condition, with bias, SD and RMSE bars beside it and the true mean always marked. I chose it because  every individual estimate stays visible without histogram bin choices, and the bars let me tell consistent error from random variation (SD) while the true mean of 22.6842 minutes stays marked. It is supposed to help a user see how much estimates vary from sample to sample.**
 - Stage 5, challenge controls and my alternative method or correction:
 
 ## 3. Results table
@@ -41,11 +41,11 @@ value for modified rows). Keep each result in its own row: never pool estimates.
 
 | Experiment | Population or condition | Method | Settings | Seed (or exact) | n | Repetitions or starts | Type | True mean | Bias | SD | RMSE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Methods at n = 100 | baseline | Simple random | | | 100 | | | | | | |
-| Methods at n = 100 | baseline | Systematic | | | 100 | | | | | | |
-| Methods at n = 100 | baseline | Stratified | | | 100 | | | | | | |
-| Sample size | baseline | Simple random | | | 1 | | | | | | |
-| Sample size | baseline | Simple random | | | 10 | | | | | | |
+| Methods at n = 100 | baseline | Simple random |none |2026| 100 |100 |Monte Carlo |22.68 |-0.13 |1.49  |1.49
+| Methods at n = 100 | baseline | Systematic | row order | exact | 100 | 100 | exact | 22.68 | 0.00 | 6.96 | 6.96 |
+| Methods at n = 100 | baseline | Stratified | weekday | 2026 | 100 | 100 | Monte Carlo | 22.68 | 0.18 | 1.56 | 1.57 |
+| Sample size | baseline | Simple random | none | 2026 | 1 | 100 | Monte Carlo | 22.68 | 0.84 | 14.63 | 14.65 |
+| Sample size | baseline | Simple random | none | 2026 | 10 | 100 | Monte Carlo | 22.68 | 0.18 | 4.77 | 4.77 |
 | Challenge | baseline | (method I challenged) | | | | | | | | | |
 | Challenge | modified | (method I challenged) | | | | | | | | | |
 | Challenge | baseline | (alternative or correction) | | | | | | | | | |
@@ -57,14 +57,14 @@ rows use the same n; a challenge baseline row may repeat a matching stage 4 resu
 
 ## 4. Findings (in my own words, using my own numbers)
 
-- (a) Method comparison: the three sampling methods compared at n = 100 (bias versus variability, and for which population):
-- (b) Sample-size finding: how sample size affects the spread of estimates and the estimation error, and what a larger sample cannot fix:
+- (a) Method comparison: the three sampling methods compared at n = 100 (bias versus variability, and for which population): **On the baseline population at n = 100, simple random and stratified on weekday had small biases and similar spread. On the other hand, systematic had bias 0.00 but a much larger SD and RMSE of 6.96. The methods differed mainly in variability and the biases of the two Monte Carlo methods are small next to their SD's so they could be noise.**
+- (b) Sample-size finding: how sample size affects the spread of estimates and the estimation error, and what a larger sample cannot fix: **For simple random sampling, the SD of the estimates fell from 14.63 at n = 1 to 4.77 at n = 10 and 1.49 at n = 100, with RMSE falling in step. Yet,m the bias stayed small and changed sign (+0.84, +0.18, −0.13). 
 
 ## 5. Challenge (hypothesis written independently, before consulting my agent)
 
 Hypothesis, written before I consult my agent:
 
-- Date written:
+- Date written: 11/18/2026
 - Method I chose to challenge:
 - The change to the population or its ordering:
 - Why the selection rule would interact with that change:
@@ -80,5 +80,5 @@ After I test it:
 ## 6. AI use
 
 - Tools used: Claude
-- What I asked my agent to do, and what I checked myself: I asked the agent to brainstorm visualization desgins and build the app. I checked the app against the list and calculated the true-mean entry myself. 
-- Automated checks my agent reported (I did not let it interpret my results): It reported 14 automated checks. 
+- What I asked my agent to do, and what I checked myself: I asked the agent to brainstorm visualization desgins and build the entire app. I checked the app against the list and calculated the true-mean entry myself. I also ran the experiments myself. 
+- Automated checks my agent reported (I did not let it interpret my results): It reported that 96 automated checks passed. This covers the three samplers, allocation, exact enumeration of starts, reproducibility frhand-calculated bias, and SD and RMSE.
