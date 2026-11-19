@@ -70,6 +70,12 @@ export default function MainMenu({ onOpen, N, trueMeanValue }) {
             </a>
             .
           </li>
+          <li>
+            All assets found on YouTube and{" "}
+            <a href="https://www.p5generator.com/" target="_blank" rel="noopener noreferrer">
+              P5Generator
+            </a>
+          </li>
         </ul>
       </div>
     </div>
