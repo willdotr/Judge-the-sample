@@ -14,8 +14,8 @@
         USE_EXTRAS) and render <App /> directly.
      3. In src/App.jsx delete the lines marked EXTRAS (the props note, the useEffect, the back button, the
         onPrepare/onNavigate handlers on the tab buttons) and the useEffect import if nothing else uses it.
-     4. Optionally delete public/music/, public/transition/, public/footer/ and public/popup/ (your files stay on
-        disk until you do).
+     4. Optionally delete public/music/, public/transition/, public/footer/, public/popup/ and public/icon/ (your
+        files stay on disk until you do).
    Nothing else depends on these files. The sampling code is untouched. */
 
 /* ---------- Animated background (builds on the theme's two background layers) ---------- */
@@ -370,4 +370,29 @@ body.p5 .page { padding-top: 24px; }
 @keyframes p5-pop-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.85); } }
 @media (prefers-reduced-motion: reduce) {
   .popupback, .popupimg, .popupback.closing, .popupback.closing .popupimg { animation: none; }
+}
+
+/* ---------- Star icon (public/icon/star.png) in place of the drawn stars ---------- */
+/* These rules apply only once the icon has loaded (the class is added in src/ExtrasShell.jsx). The stars keep
+   spinning exactly as before; only what they look like changes. */
+body.has-star-icon h1::after,
+body.has-star-icon h2::before,
+body.has-star-icon .rulebox h2::before,
+body.has-star-icon .views section h2::before,
+body.has-star-icon .p5player-star,
+body.has-star-icon .p5t-star.front {
+  clip-path: none;
+  background: var(--star-icon) center / contain no-repeat;
+}
+/* The headings inside the white cards sit on red plates, where a red star would blend in: give it a white edge. */
+body.has-star-icon .rulebox h2::before,
+body.has-star-icon .views section h2::before {
+  filter: drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff);
+}
+/* On the loading screen the star sits on red too: white edge plus a hard black shadow. The black copy behind it is
+   no longer needed. */
+body.has-star-icon .p5t-star.back { display: none; }
+body.has-star-icon .p5t-star.front {
+  filter: drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff)
+    drop-shadow(6px 6px 0 #000);
 }

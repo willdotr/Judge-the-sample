@@ -40,6 +40,9 @@ const CLIPS = { single: "single-sample.mp4", A: "experiment-a.mp4", B: "experime
 //  - "black": near-black is see-through, with no page picture.
 const KEY_COLOR = { challenge: "shatter" };
 
+// The star icon (public/icon/star.png) replaces the drawn spinning stars. If it can't be loaded, the drawn stars stay.
+const STAR_ICON = `${import.meta.env.BASE_URL}icon/star.png`;
+
 export default function ExtrasShell() {
   const [screen, setScreen] = useState("menu"); // "menu" or "app"
   const [openTab, setOpenTab] = useState(null); // object, so choosing the same tab again still applies
@@ -48,6 +51,17 @@ export default function ExtrasShell() {
   const [trans, setTrans] = useState(null);
   const [failedClips, setFailedClips] = useState([]); // clip addresses that are missing or can't play
   const snapRef = useRef(null); // { target, at, promise }: a picture of the current page, taken ahead of a click
+
+  // Load the star icon. Once it has loaded, the stars switch to it (see "has-star-icon" in extras.css).
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      document.documentElement.style.setProperty("--star-icon", `url("${STAR_ICON}")`);
+      document.body.classList.add("has-star-icon");
+    };
+    img.src = STAR_ICON;
+    return () => document.body.classList.remove("has-star-icon");
+  }, []);
 
   // Start loading the default clip as soon as the app opens, so the first transition doesn't wait for it.
   useEffect(() => {
